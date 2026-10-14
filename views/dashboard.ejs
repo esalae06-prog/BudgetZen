@@ -1,0 +1,1263 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Dashboard - BudgetZen</title>
+
+    <link rel="stylesheet" href="/styles.css">
+</head>
+
+
+<body class="bz-body">
+
+<div class="bz-app">
+
+
+    <!-- =====================================
+         MENU LATÉRAL
+         ===================================== -->
+
+    <aside class="bz-sidebar">
+
+        <div class="bz-logo">
+            ◈ BudgetZen
+        </div>
+
+
+        <p class="bz-menu-label">
+            PRINCIPAL
+        </p>
+
+
+        <nav class="bz-nav"
+             aria-label="Navigation principale">
+
+            <a href="#apercu"
+               class="bz-nav-active">
+                ▦ Tableau de bord
+            </a>
+
+            <a href="#transactions">
+                ⇄ Transactions
+            </a>
+
+            <a href="#statistiques">
+                ◫ Statistiques
+            </a>
+
+            <a href="#budget">
+                ◉ Mon budget
+            </a>
+
+            <a href="#ajout">
+                ＋ Nouvelle opération
+            </a>
+
+        </nav>
+
+
+
+        <div class="bz-sidebar-bottom">
+
+
+            <div class="bz-profile">
+
+                <span class="bz-avatar">
+                    <%= utilisateur.nom.charAt(0).toUpperCase() %>
+                </span>
+
+
+                <div>
+
+                    <strong>
+                        <%= utilisateur.nom %>
+                    </strong>
+
+                    <small>
+                        Mon compte
+                    </small>
+
+                </div>
+
+            </div>
+
+
+
+            <!-- DÉCONNEXION -->
+
+            <form action="/deconnexion"
+                  method="POST">
+
+                <input
+                    type="hidden"
+                    name="_csrf"
+                    value="<%= csrfToken %>"
+                >
+
+                <button
+                    class="bz-logout"
+                    type="submit"
+                >
+                    ↪ Se déconnecter
+                </button>
+
+            </form>
+
+
+        </div>
+
+    </aside>
+
+
+
+    <!-- =====================================
+         CONTENU PRINCIPAL
+         ===================================== -->
+
+    <main class="bz-main"
+          id="apercu">
+
+
+        <!-- =====================================
+             HEADER
+             ===================================== -->
+
+        <header class="bz-header">
+
+            <div>
+
+                <p class="bz-eyebrow">
+                    MON ESPACE FINANCIER
+                </p>
+
+
+                <h1>
+                    Bonjour, <%= utilisateur.nom %> 👋
+                </h1>
+
+
+                <p class="bz-muted">
+                    Voici un aperçu de votre situation financière.
+                </p>
+
+            </div>
+
+
+            <a href="#ajout"
+               class="bz-button">
+                + Ajouter une transaction
+            </a>
+
+        </header>
+
+
+
+        <!-- =====================================
+             CARTES STATISTIQUES
+             ===================================== -->
+
+        <section
+            class="bz-stats"
+            aria-label="Résumé financier"
+        >
+
+
+            <!-- SOLDE TOTAL -->
+
+            <article class="bz-stat">
+
+                <div class="bz-stat-icon bz-purple">
+                    ◈
+                </div>
+
+
+                <p>
+                    Solde total
+                </p>
+
+
+                <h2>
+                    <%= formatEuro(solde) %>
+                </h2>
+
+
+                <small>
+                    Depuis la création du compte
+                </small>
+
+            </article>
+
+
+
+            <!-- REVENUS -->
+
+            <article class="bz-stat">
+
+                <div class="bz-stat-icon bz-green">
+                    ↗
+                </div>
+
+
+                <p>
+                    Revenus du mois
+                </p>
+
+
+                <h2 class="bz-positive">
+                    <%= formatEuro(statistiques.revenus) %>
+                </h2>
+
+
+                <small>
+                    Total des entrées
+                </small>
+
+            </article>
+
+
+
+            <!-- DÉPENSES -->
+
+            <article class="bz-stat">
+
+                <div class="bz-stat-icon bz-red">
+                    ↘
+                </div>
+
+
+                <p>
+                    Dépenses du mois
+                </p>
+
+
+                <h2 class="bz-negative">
+                    <%= formatEuro(statistiques.depenses) %>
+                </h2>
+
+
+                <small>
+                    Total des sorties
+                </small>
+
+            </article>
+
+
+
+            <!-- ÉPARGNE -->
+
+            <article class="bz-stat">
+
+                <div class="bz-stat-icon bz-blue">
+                    ◎
+                </div>
+
+
+                <p>
+                    Épargne du mois
+                </p>
+
+
+                <h2>
+                    <%= formatEuro(
+                        statistiques.revenus -
+                        statistiques.depenses
+                    ) %>
+                </h2>
+
+
+                <small>
+                    Revenus moins dépenses
+                </small>
+
+            </article>
+
+
+        </section>
+
+
+
+        <!-- =====================================
+             GRAPHIQUE + BUDGET
+             ===================================== -->
+
+        <div class="bz-grid">
+
+
+            <!-- ÉVOLUTION FINANCIÈRE -->
+
+            <section
+                class="bz-panel"
+                id="statistiques"
+            >
+
+                <div class="bz-panel-heading">
+
+                    <div>
+
+                        <h2>
+                            Évolution financière
+                        </h2>
+
+                        <p>
+                            Les six derniers mois
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+
+                <div class="bz-legend">
+
+                    <span>
+                        <i class="bz-dot-income"></i>
+                        Revenus
+                    </span>
+
+
+                    <span>
+                        <i class="bz-dot-expense"></i>
+                        Dépenses
+                    </span>
+
+                </div>
+
+
+
+                <div class="bz-chart">
+
+                    <% graphique.forEach(function(m) { %>
+
+                        <div class="bz-chart-row">
+
+
+                            <span>
+                                <%= m.label %>
+                            </span>
+
+
+                            <div class="bz-chart-bars">
+
+
+                                <progress
+                                    class="bz-progress-income"
+                                    max="<%= maximumGraphique %>"
+                                    value="<%= m.revenus %>"
+                                >
+                                </progress>
+
+
+                                <progress
+                                    class="bz-progress-expense"
+                                    max="<%= maximumGraphique %>"
+                                    value="<%= m.depenses %>"
+                                >
+                                </progress>
+
+
+                            </div>
+
+                        </div>
+
+                    <% }); %>
+
+                </div>
+
+            </section>
+
+
+
+            <!-- =====================================
+                 BUDGET MENSUEL
+                 ===================================== -->
+
+            <section
+                class="bz-panel"
+                id="budget"
+            >
+
+                <h2>
+                    Mon budget mensuel
+                </h2>
+
+
+                <p class="bz-muted">
+                    Gardez le contrôle de vos dépenses.
+                </p>
+
+
+
+                <div class="bz-budget-number">
+
+                    <%= formatEuro(statistiques.depenses) %>
+
+                </div>
+
+
+
+                <p class="bz-muted">
+
+                    sur
+
+                    <%= limite > 0
+                        ? formatEuro(limite)
+                        : "aucune limite définie"
+                    %>
+
+                </p>
+
+
+
+                <progress
+                    class="bz-budget-progress"
+                    max="100"
+                    value="<%= utilisation %>"
+                >
+                </progress>
+
+
+
+                <p class="bz-small">
+
+                    <%= utilisation %>%
+                    du budget utilisé
+
+                </p>
+
+
+
+                <!-- FORMULAIRE BUDGET -->
+
+                <form
+                    action="/budget/enregistrer"
+                    method="POST"
+                    class="bz-budget-form"
+                >
+
+
+                    <input
+                        type="hidden"
+                        name="_csrf"
+                        value="<%= csrfToken %>"
+                    >
+
+
+
+                    <label for="budget-montant">
+
+                        Définir mon budget (€)
+
+                    </label>
+
+
+
+                    <input
+                        type="number"
+                        id="budget-montant"
+                        name="montant"
+                        min="0.01"
+                        max="1000000"
+                        step="0.01"
+                        required
+                        placeholder="Ex : 800"
+                    >
+
+
+
+                    <button
+                        type="submit"
+                        class="bz-button"
+                    >
+                        Enregistrer
+                    </button>
+
+
+                </form>
+
+            </section>
+
+
+        </div>
+
+
+
+        <!-- =====================================
+             TRANSACTIONS + RÉPARTITION
+             ===================================== -->
+
+        <div class="bz-grid">
+
+
+            <!-- TRANSACTIONS -->
+
+            <section
+                class="bz-panel"
+                id="transactions"
+            >
+
+                <h2>
+                    Transactions récentes
+                </h2>
+
+
+                <p class="bz-muted">
+
+                    Vos dix dernières opérations
+
+                </p>
+
+
+
+                <div class="bz-table-wrap">
+
+
+                    <table class="bz-table">
+
+
+                        <thead>
+
+                            <tr>
+
+                                <th>
+                                    Transaction
+                                </th>
+
+                                <th>
+                                    Date
+                                </th>
+
+                                <th>
+                                    Montant
+                                </th>
+
+                                <th>
+                                    Action
+                                </th>
+
+                            </tr>
+
+                        </thead>
+
+
+
+                        <tbody>
+
+
+                            <% if (transactions.length === 0) { %>
+
+
+                                <tr>
+
+                                    <td colspan="4">
+
+                                        Aucune transaction
+                                        pour le moment.
+
+                                    </td>
+
+                                </tr>
+
+
+                            <% } %>
+
+
+
+                            <% transactions.forEach(function(t) { %>
+
+
+                                <tr>
+
+
+                                    <!-- CATÉGORIE -->
+
+                                    <td>
+
+                                        <strong>
+
+                                            <%= t.categorie %>
+
+                                        </strong>
+
+
+                                        <small>
+
+                                            <%= t.description || t.type %>
+
+                                        </small>
+
+                                    </td>
+
+
+
+                                    <!-- DATE -->
+
+                                    <td>
+
+                                        <%= t.date_transaction %>
+
+                                    </td>
+
+
+
+                                    <!-- MONTANT -->
+
+                                    <td
+                                        class="<%= t.type === 'revenu'
+                                            ? 'bz-positive'
+                                            : 'bz-negative'
+                                        %>"
+                                    >
+
+                                        <%= t.type === 'revenu'
+                                            ? '+'
+                                            : '-'
+                                        %>
+
+                                        <%= formatEuro(
+                                            t.montant_centimes
+                                        ) %>
+
+                                    </td>
+
+
+
+                                    <!-- =====================================
+                                         SUPPRESSION
+                                         ===================================== -->
+
+                                    <td>
+
+
+                                        <form
+                                            method="POST"
+
+                                            action="/transactions/<%= t.id %>/supprimer"
+
+                                            class="bz-delete-form"
+                                        >
+
+
+                                            <input
+                                                type="hidden"
+                                                name="_csrf"
+                                                value="<%= csrfToken %>"
+                                            >
+
+
+
+                                            <button
+                                                type="submit"
+
+                                                class="bz-delete"
+
+                                                aria-label="Supprimer la transaction"
+
+                                                title="Supprimer cette transaction"
+                                            >
+
+                                                ✕
+
+                                            </button>
+
+
+                                        </form>
+
+
+                                    </td>
+
+
+                                </tr>
+
+
+                            <% }); %>
+
+
+                        </tbody>
+
+
+                    </table>
+
+
+                </div>
+
+
+            </section>
+
+
+
+            <!-- =====================================
+                 RÉPARTITION DES DÉPENSES
+                 ===================================== -->
+
+            <section class="bz-panel">
+
+
+                <h2>
+                    Répartition des dépenses
+                </h2>
+
+
+                <p class="bz-muted">
+
+                    Par catégorie, ce mois-ci
+
+                </p>
+
+
+
+                <div class="bz-donut-wrap">
+
+
+                    <svg
+                        class="bz-donut"
+
+                        viewBox="0 0 150 150"
+
+                        role="img"
+
+                        aria-label="Répartition des dépenses"
+                    >
+
+
+                        <circle
+                            cx="75"
+                            cy="75"
+                            r="52"
+                            pathLength="100"
+                            class="bz-donut-track"
+                        />
+
+
+
+                        <% repartition.forEach(function(c, i) { %>
+
+
+                            <circle
+                                cx="75"
+
+                                cy="75"
+
+                                r="52"
+
+                                pathLength="100"
+
+                                class="bz-donut-slice bz-slice-<%= i % 6 %>"
+
+                                stroke-dasharray="<%= c.pourcentage %> <%= 100 - c.pourcentage %>"
+
+                                stroke-dashoffset="<%= -c.decalage %>"
+                            />
+
+
+                        <% }); %>
+
+
+
+                        <text
+                            x="75"
+
+                            y="70"
+
+                            text-anchor="middle"
+
+                            class="bz-donut-caption"
+                        >
+
+                            Dépenses
+
+                        </text>
+
+
+
+                        <text
+                            x="75"
+
+                            y="86"
+
+                            text-anchor="middle"
+
+                            class="bz-donut-value"
+                        >
+
+                            <%= formatEuro(
+                                statistiques.depenses
+                            ) %>
+
+                        </text>
+
+
+                    </svg>
+
+
+                </div>
+
+
+
+                <div class="bz-category-list">
+
+
+                    <% if (repartition.length === 0) { %>
+
+
+                        <p class="bz-muted">
+
+                            Aucune dépense enregistrée
+                            ce mois-ci.
+
+                        </p>
+
+
+                    <% } %>
+
+
+
+                    <% repartition.forEach(function(c, i) { %>
+
+
+                        <div class="bz-category-item">
+
+
+                            <span>
+
+
+                                <i
+                                    class="bz-category-dot bz-slice-<%= i % 6 %>"
+                                >
+                                </i>
+
+
+                                <%= c.categorie %>
+
+
+                            </span>
+
+
+
+                            <strong>
+
+                                <%= formatEuro(c.total) %>
+
+                            </strong>
+
+
+                        </div>
+
+
+                    <% }); %>
+
+
+                </div>
+
+
+            </section>
+
+
+        </div>
+
+
+
+        <!-- =====================================
+             AJOUTER UNE TRANSACTION
+             ===================================== -->
+
+        <section
+            class="bz-panel bz-add-panel"
+            id="ajout"
+        >
+
+
+            <h2>
+                Nouvelle transaction
+            </h2>
+
+
+            <p class="bz-muted">
+
+                Ajoutez un revenu ou une dépense.
+
+            </p>
+
+
+
+            <form
+                action="/transactions/ajouter"
+
+                method="POST"
+
+                class="bz-transaction-form"
+            >
+
+
+                <input
+                    type="hidden"
+                    name="_csrf"
+                    value="<%= csrfToken %>"
+                >
+
+
+
+                <!-- TYPE -->
+
+                <div>
+
+
+                    <label for="type">
+                        Type
+                    </label>
+
+
+                    <select
+                        id="type"
+                        name="type"
+                        required
+                    >
+
+
+                        <option value="depense">
+
+                            Dépense
+
+                        </option>
+
+
+                        <option value="revenu">
+
+                            Revenu
+
+                        </option>
+
+
+                    </select>
+
+
+                </div>
+
+
+
+                <!-- MONTANT -->
+
+                <div>
+
+
+                    <label for="montant">
+
+                        Montant (€)
+
+                    </label>
+
+
+                    <input
+                        type="number"
+
+                        id="montant"
+
+                        name="montant"
+
+                        min="0.01"
+
+                        max="1000000"
+
+                        step="0.01"
+
+                        required
+
+                        placeholder="Ex : 50"
+                    >
+
+
+                </div>
+
+
+
+                <!-- CATÉGORIE -->
+
+                <div>
+
+
+                    <label for="categorie">
+
+                        Catégorie
+
+                    </label>
+
+
+                    <select
+                        id="categorie"
+
+                        name="categorie"
+
+                        required
+                    >
+
+
+                        <optgroup label="Dépenses">
+
+
+                            <option>
+                                Alimentation
+                            </option>
+
+
+                            <option>
+                                Logement
+                            </option>
+
+
+                            <option>
+                                Transport
+                            </option>
+
+
+                            <option>
+                                Loisirs
+                            </option>
+
+
+                            <option>
+                                Santé
+                            </option>
+
+
+                            <option>
+                                Études
+                            </option>
+
+
+                            <option>
+                                Autres dépenses
+                            </option>
+
+
+                        </optgroup>
+
+
+
+                        <optgroup label="Revenus">
+
+
+                            <option>
+                                Salaire
+                            </option>
+
+
+                            <option>
+                                Autres revenus
+                            </option>
+
+
+                        </optgroup>
+
+
+                    </select>
+
+
+                </div>
+
+
+
+                <!-- DATE -->
+
+                <div>
+
+
+                    <label for="date">
+                        Date
+                    </label>
+
+
+                    <input
+                        type="date"
+
+                        id="date"
+
+                        name="date"
+
+                        value="<%= dateAujourdhui %>"
+
+                        required
+                    >
+
+
+                </div>
+
+
+
+                <!-- DESCRIPTION -->
+
+                <div class="bz-description-field">
+
+
+                    <label for="description">
+
+                        Description
+
+                    </label>
+
+
+                    <input
+                        type="text"
+
+                        id="description"
+
+                        name="description"
+
+                        maxlength="140"
+
+                        placeholder="Ex : Courses au supermarché"
+                    >
+
+
+                </div>
+
+
+
+                <button
+                    type="submit"
+                    class="bz-button"
+                >
+
+                    + Enregistrer la transaction
+
+                </button>
+
+
+
+                <p class="bz-form-hint">
+
+                    Choisissez une catégorie
+                    correspondant au type
+                    revenu ou dépense.
+
+                </p>
+
+
+            </form>
+
+
+        </section>
+
+
+    </main>
+
+
+</div>
+
+
+
+<!-- ==================================================
+     FENÊTRE PERSONNALISÉE DE CONFIRMATION
+     ================================================== -->
+
+<div
+    id="deleteModal"
+
+    class="bz-delete-modal-overlay"
+
+    aria-hidden="true"
+>
+
+
+    <div
+        class="bz-delete-modal"
+
+        role="dialog"
+
+        aria-modal="true"
+
+        aria-labelledby="deleteModalTitle"
+    >
+
+
+        <!-- ICÔNE -->
+
+        <div class="bz-delete-modal-icon">
+
+            !
+
+        </div>
+
+
+
+        <!-- TITRE -->
+
+        <h2 id="deleteModalTitle">
+
+            Supprimer cette transaction ?
+
+        </h2>
+
+
+
+        <!-- MESSAGE -->
+
+        <p>
+
+            Cette transaction sera supprimée définitivement.
+
+            <br>
+
+            Cette action est irréversible.
+
+        </p>
+
+
+
+        <!-- BOUTONS -->
+
+        <div class="bz-delete-modal-actions">
+
+
+            <button
+                type="button"
+
+                id="cancelDelete"
+
+                class="bz-delete-modal-cancel"
+            >
+
+                Annuler
+
+            </button>
+
+
+
+            <button
+                type="button"
+
+                id="confirmDelete"
+
+                class="bz-delete-modal-confirm"
+            >
+
+                Supprimer
+
+            </button>
+
+
+        </div>
+
+
+    </div>
+
+
+</div>
+
+
+
+<!-- JAVASCRIPT EXTERNE -->
+
+<script
+    src="/confirm-delete.js"
+    defer
+></script>
+
+
+</body>
+
+</html>
