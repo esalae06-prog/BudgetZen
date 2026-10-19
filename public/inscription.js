@@ -1,26 +1,14 @@
-"use strict";
-
 document.addEventListener("DOMContentLoaded", () => {
-
     const formulaire = document.querySelector("form");
-
     const password = document.getElementById("password");
-
     const confirmation = document.getElementById("confirmation");
-
     const messageErreur = document.getElementById("confirmation-error");
 
-    if (
-        !formulaire ||
-        !password ||
-        !confirmation ||
-        !messageErreur
-    ) {
+    if (!formulaire || !password || !confirmation || !messageErreur) {
         return;
     }
 
     function verifierConfirmation() {
-
         const identiques =
             password.value === confirmation.value;
 
@@ -38,20 +26,14 @@ document.addEventListener("DOMContentLoaded", () => {
         verifierConfirmation
     );
 
-    password.addEventListener(
-        "input",
-        () => {
-
-            if (confirmation.value) {
-                verifierConfirmation();
-            }
-
+    password.addEventListener("input", () => {
+        if (confirmation.value) {
+            verifierConfirmation();
         }
-    );
+    });
 
     formulaire.addEventListener(
         "submit",
         verifierConfirmation
     );
-
 });

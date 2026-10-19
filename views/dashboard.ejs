@@ -1,19 +1,28 @@
 <!DOCTYPE html>
+
 <html lang="fr">
 
 <head>
+
     <meta charset="UTF-8">
 
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
     <title>Dashboard - BudgetZen</title>
 
-    <link rel="stylesheet" href="/styles.css">
+    <link
+        rel="stylesheet"
+        href="/styles.css"
+    >
+
 </head>
 
 
 <body class="bz-body">
+
 
 <div class="bz-app">
 
@@ -23,6 +32,7 @@
          ===================================== -->
 
     <aside class="bz-sidebar">
+
 
         <div class="bz-logo">
             ◈ BudgetZen
@@ -34,32 +44,34 @@
         </p>
 
 
-        <nav class="bz-nav"
-             aria-label="Navigation principale">
+        <nav
+            class="bz-nav"
+            aria-label="Navigation principale"
+        >
 
-            <a href="#apercu"
-               class="bz-nav-active">
+            <a
+                href="#apercu"
+                class="bz-nav-active"
+            >
                 ▦ Tableau de bord
             </a>
+
+
+            <a href="#statistiques">
+                ◫ Statistiques et budget
+            </a>
+
 
             <a href="#transactions">
                 ⇄ Transactions
             </a>
 
-            <a href="#statistiques">
-                ◫ Statistiques
-            </a>
-
-            <a href="#budget">
-                ◉ Mon budget
-            </a>
 
             <a href="#ajout">
                 ＋ Nouvelle opération
             </a>
 
         </nav>
-
 
 
         <div class="bz-sidebar-bottom">
@@ -87,11 +99,12 @@
             </div>
 
 
-
             <!-- DÉCONNEXION -->
 
-            <form action="/deconnexion"
-                  method="POST">
+            <form
+                action="/deconnexion"
+                method="POST"
+            >
 
                 <input
                     type="hidden"
@@ -111,6 +124,7 @@
 
         </div>
 
+
     </aside>
 
 
@@ -119,8 +133,10 @@
          CONTENU PRINCIPAL
          ===================================== -->
 
-    <main class="bz-main"
-          id="apercu">
+    <main
+        class="bz-main"
+        id="apercu"
+    >
 
 
         <!-- =====================================
@@ -135,23 +151,15 @@
                     MON ESPACE FINANCIER
                 </p>
 
-
                 <h1>
                     Bonjour, <%= utilisateur.nom %> 👋
                 </h1>
-
 
                 <p class="bz-muted">
                     Voici un aperçu de votre situation financière.
                 </p>
 
             </div>
-
-
-            <a href="#ajout"
-               class="bz-button">
-                + Ajouter une transaction
-            </a>
 
         </header>
 
@@ -167,7 +175,7 @@
         >
 
 
-            <!-- SOLDE TOTAL -->
+            <!-- SOLDE -->
 
             <article class="bz-stat">
 
@@ -175,16 +183,13 @@
                     ◈
                 </div>
 
-
                 <p>
                     Solde total
                 </p>
 
-
                 <h2>
                     <%= formatEuro(solde) %>
                 </h2>
-
 
                 <small>
                     Depuis la création du compte
@@ -202,16 +207,13 @@
                     ↗
                 </div>
 
-
                 <p>
                     Revenus du mois
                 </p>
 
-
                 <h2 class="bz-positive">
                     <%= formatEuro(statistiques.revenus) %>
                 </h2>
-
 
                 <small>
                     Total des entrées
@@ -229,16 +231,13 @@
                     ↘
                 </div>
 
-
                 <p>
                     Dépenses du mois
                 </p>
 
-
                 <h2 class="bz-negative">
                     <%= formatEuro(statistiques.depenses) %>
                 </h2>
-
 
                 <small>
                     Total des sorties
@@ -256,11 +255,9 @@
                     ◎
                 </div>
 
-
                 <p>
                     Épargne du mois
                 </p>
-
 
                 <h2>
                     <%= formatEuro(
@@ -268,7 +265,6 @@
                         statistiques.depenses
                     ) %>
                 </h2>
-
 
                 <small>
                     Revenus moins dépenses
@@ -282,7 +278,8 @@
 
 
         <!-- =====================================
-             GRAPHIQUE + BUDGET
+             LIGNE 1
+             STATISTIQUES + BUDGET
              ===================================== -->
 
         <div class="bz-grid">
@@ -303,14 +300,13 @@
                             Évolution financière
                         </h2>
 
-                        <p>
+                        <p class="bz-muted">
                             Les six derniers mois
                         </p>
 
                     </div>
 
                 </div>
-
 
 
                 <div class="bz-legend">
@@ -320,7 +316,6 @@
                         Revenus
                     </span>
 
-
                     <span>
                         <i class="bz-dot-expense"></i>
                         Dépenses
@@ -329,37 +324,29 @@
                 </div>
 
 
-
                 <div class="bz-chart">
 
                     <% graphique.forEach(function(m) { %>
 
                         <div class="bz-chart-row">
 
-
                             <span>
                                 <%= m.label %>
                             </span>
 
-
                             <div class="bz-chart-bars">
-
 
                                 <progress
                                     class="bz-progress-income"
                                     max="<%= maximumGraphique %>"
                                     value="<%= m.revenus %>"
-                                >
-                                </progress>
-
+                                ></progress>
 
                                 <progress
                                     class="bz-progress-expense"
                                     max="<%= maximumGraphique %>"
                                     value="<%= m.depenses %>"
-                                >
-                                </progress>
-
+                                ></progress>
 
                             </div>
 
@@ -369,12 +356,13 @@
 
                 </div>
 
+
             </section>
 
 
 
             <!-- =====================================
-                 BUDGET MENSUEL
+                 BUDGET
                  ===================================== -->
 
             <section
@@ -386,19 +374,14 @@
                     Mon budget mensuel
                 </h2>
 
-
                 <p class="bz-muted">
                     Gardez le contrôle de vos dépenses.
                 </p>
 
 
-
                 <div class="bz-budget-number">
-
                     <%= formatEuro(statistiques.depenses) %>
-
                 </div>
-
 
 
                 <p class="bz-muted">
@@ -413,14 +396,11 @@
                 </p>
 
 
-
                 <progress
                     class="bz-budget-progress"
                     max="100"
                     value="<%= utilisation %>"
-                >
-                </progress>
-
+                ></progress>
 
 
                 <p class="bz-small">
@@ -431,7 +411,6 @@
                 </p>
 
 
-
                 <!-- FORMULAIRE BUDGET -->
 
                 <form
@@ -440,7 +419,6 @@
                     class="bz-budget-form"
                 >
 
-
                     <input
                         type="hidden"
                         name="_csrf"
@@ -448,13 +426,9 @@
                     >
 
 
-
                     <label for="budget-montant">
-
                         Définir mon budget (€)
-
                     </label>
-
 
 
                     <input
@@ -466,19 +440,28 @@
                         step="0.01"
                         required
                         placeholder="Ex : 800"
+                        value="<%= limite > 0
+                            ? (limite / 100).toFixed(2)
+                            : ''
+                        %>"
                     >
-
 
 
                     <button
                         type="submit"
                         class="bz-button"
                     >
-                        Enregistrer
+
+                        <%= limite > 0
+                            ? "Modifier mon budget"
+                            : "Enregistrer"
+                        %>
+
                     </button>
 
 
                 </form>
+
 
             </section>
 
@@ -488,13 +471,16 @@
 
 
         <!-- =====================================
+             LIGNE 2
              TRANSACTIONS + RÉPARTITION
              ===================================== -->
 
         <div class="bz-grid">
 
 
-            <!-- TRANSACTIONS -->
+            <!-- =====================================
+                 TRANSACTIONS
+                 ===================================== -->
 
             <section
                 class="bz-panel"
@@ -505,13 +491,9 @@
                     Transactions récentes
                 </h2>
 
-
                 <p class="bz-muted">
-
                     Vos dix dernières opérations
-
                 </p>
-
 
 
                 <div class="bz-table-wrap">
@@ -545,67 +527,44 @@
                         </thead>
 
 
-
                         <tbody>
 
 
                             <% if (transactions.length === 0) { %>
 
-
                                 <tr>
 
                                     <td colspan="4">
-
-                                        Aucune transaction
-                                        pour le moment.
-
+                                        Aucune transaction pour le moment.
                                     </td>
 
                                 </tr>
 
-
                             <% } %>
-
 
 
                             <% transactions.forEach(function(t) { %>
 
-
                                 <tr>
 
-
-                                    <!-- CATÉGORIE -->
 
                                     <td>
 
                                         <strong>
-
                                             <%= t.categorie %>
-
                                         </strong>
 
-
                                         <small>
-
                                             <%= t.description || t.type %>
-
                                         </small>
 
                                     </td>
 
 
-
-                                    <!-- DATE -->
-
                                     <td>
-
                                         <%= t.date_transaction %>
-
                                     </td>
 
-
-
-                                    <!-- MONTANT -->
 
                                     <td
                                         class="<%= t.type === 'revenu'
@@ -626,22 +585,13 @@
                                     </td>
 
 
-
-                                    <!-- =====================================
-                                         SUPPRESSION
-                                         ===================================== -->
-
                                     <td>
-
 
                                         <form
                                             method="POST"
-
                                             action="/transactions/<%= t.id %>/supprimer"
-
                                             class="bz-delete-form"
                                         >
-
 
                                             <input
                                                 type="hidden"
@@ -649,31 +599,21 @@
                                                 value="<%= csrfToken %>"
                                             >
 
-
-
                                             <button
                                                 type="submit"
-
                                                 class="bz-delete"
-
                                                 aria-label="Supprimer la transaction"
-
                                                 title="Supprimer cette transaction"
                                             >
-
                                                 ✕
-
                                             </button>
 
-
                                         </form>
-
 
                                     </td>
 
 
                                 </tr>
-
 
                             <% }); %>
 
@@ -695,20 +635,16 @@
                  RÉPARTITION DES DÉPENSES
                  ===================================== -->
 
-            <section class="bz-panel">
+            <section class="bz-panel bz-repartition-panel">
 
 
                 <h2>
                     Répartition des dépenses
                 </h2>
 
-
                 <p class="bz-muted">
-
                     Par catégorie, ce mois-ci
-
                 </p>
-
 
 
                 <div class="bz-donut-wrap">
@@ -716,11 +652,8 @@
 
                     <svg
                         class="bz-donut"
-
                         viewBox="0 0 150 150"
-
                         role="img"
-
                         aria-label="Répartition des dépenses"
                     >
 
@@ -734,61 +667,40 @@
                         />
 
 
-
                         <% repartition.forEach(function(c, i) { %>
-
 
                             <circle
                                 cx="75"
-
                                 cy="75"
-
                                 r="52"
-
                                 pathLength="100"
-
                                 class="bz-donut-slice bz-slice-<%= i % 6 %>"
-
                                 stroke-dasharray="<%= c.pourcentage %> <%= 100 - c.pourcentage %>"
-
                                 stroke-dashoffset="<%= -c.decalage %>"
                             />
-
 
                         <% }); %>
 
 
-
                         <text
                             x="75"
-
                             y="70"
-
                             text-anchor="middle"
-
                             class="bz-donut-caption"
                         >
-
                             Dépenses
-
                         </text>
 
 
-
                         <text
                             x="75"
-
                             y="86"
-
                             text-anchor="middle"
-
                             class="bz-donut-value"
                         >
-
                             <%= formatEuro(
                                 statistiques.depenses
                             ) %>
-
                         </text>
 
 
@@ -798,56 +710,40 @@
                 </div>
 
 
-
                 <div class="bz-category-list">
 
 
                     <% if (repartition.length === 0) { %>
 
-
                         <p class="bz-muted">
-
-                            Aucune dépense enregistrée
-                            ce mois-ci.
-
+                            Aucune dépense enregistrée ce mois-ci.
                         </p>
-
 
                     <% } %>
 
 
-
                     <% repartition.forEach(function(c, i) { %>
-
 
                         <div class="bz-category-item">
 
 
                             <span>
 
-
                                 <i
                                     class="bz-category-dot bz-slice-<%= i % 6 %>"
-                                >
-                                </i>
-
+                                ></i>
 
                                 <%= c.categorie %>
-
 
                             </span>
 
 
-
                             <strong>
-
                                 <%= formatEuro(c.total) %>
-
                             </strong>
 
 
                         </div>
-
 
                     <% }); %>
 
@@ -863,7 +759,7 @@
 
 
         <!-- =====================================
-             AJOUTER UNE TRANSACTION
+             NOUVELLE TRANSACTION
              ===================================== -->
 
         <section
@@ -876,20 +772,52 @@
                 Nouvelle transaction
             </h2>
 
-
             <p class="bz-muted">
-
                 Ajoutez un revenu ou une dépense.
-
             </p>
 
 
 
+            <!-- MESSAGE D'ERREUR -->
+
+            <% if (erreurTransaction) { %>
+
+                <div
+                    class="bz-transaction-error"
+                    role="alert"
+                >
+
+                    <div class="bz-transaction-error-icon">
+                        !
+                    </div>
+
+
+                    <div class="bz-transaction-error-content">
+
+                        <strong>
+                            Transaction non enregistrée
+                        </strong>
+
+                        <p>
+                            <%= erreurTransaction %>
+                        </p>
+
+                    </div>
+
+
+                </div>
+
+            <% } %>
+
+
+
+            <!-- =====================================
+                 FORMULAIRE TRANSACTION
+                 ===================================== -->
+
             <form
                 action="/transactions/ajouter"
-
                 method="POST"
-
                 class="bz-transaction-form"
             >
 
@@ -906,7 +834,6 @@
 
                 <div>
 
-
                     <label for="type">
                         Type
                     </label>
@@ -918,23 +845,29 @@
                         required
                     >
 
-
-                        <option value="depense">
-
+                        <option
+                            value="depense"
+                            <%= ancienneTransaction?.type === "depense"
+                                ? "selected"
+                                : ""
+                            %>
+                        >
                             Dépense
-
                         </option>
 
 
-                        <option value="revenu">
-
+                        <option
+                            value="revenu"
+                            <%= ancienneTransaction?.type === "revenu"
+                                ? "selected"
+                                : ""
+                            %>
+                        >
                             Revenu
-
                         </option>
 
 
                     </select>
-
 
                 </div>
 
@@ -944,92 +877,134 @@
 
                 <div>
 
-
                     <label for="montant">
-
                         Montant (€)
-
                     </label>
 
 
                     <input
                         type="number"
-
                         id="montant"
-
                         name="montant"
-
                         min="0.01"
-
                         max="1000000"
-
                         step="0.01"
-
                         required
-
                         placeholder="Ex : 50"
+                        value="<%= ancienneTransaction?.montant || '' %>"
                     >
-
 
                 </div>
 
 
 
-                <!-- CATÉGORIE -->
+                <!-- =====================================
+                     CATÉGORIE
+                     ===================================== -->
 
                 <div>
 
-
                     <label for="categorie">
-
                         Catégorie
-
                     </label>
 
 
                     <select
                         id="categorie"
-
                         name="categorie"
-
                         required
                     >
 
+                        <option value="">
+                            Choisir une catégorie
+                        </option>
+
+
+                        <!-- DÉPENSES -->
 
                         <optgroup label="Dépenses">
 
 
-                            <option>
+                            <option
+                                value="Alimentation"
+                                data-type="depense"
+                                <%= ancienneTransaction?.categorie === "Alimentation"
+                                    ? "selected"
+                                    : ""
+                                %>
+                            >
                                 Alimentation
                             </option>
 
 
-                            <option>
+                            <option
+                                value="Logement"
+                                data-type="depense"
+                                <%= ancienneTransaction?.categorie === "Logement"
+                                    ? "selected"
+                                    : ""
+                                %>
+                            >
                                 Logement
                             </option>
 
 
-                            <option>
+                            <option
+                                value="Transport"
+                                data-type="depense"
+                                <%= ancienneTransaction?.categorie === "Transport"
+                                    ? "selected"
+                                    : ""
+                                %>
+                            >
                                 Transport
                             </option>
 
 
-                            <option>
+                            <option
+                                value="Loisirs"
+                                data-type="depense"
+                                <%= ancienneTransaction?.categorie === "Loisirs"
+                                    ? "selected"
+                                    : ""
+                                %>
+                            >
                                 Loisirs
                             </option>
 
 
-                            <option>
+                            <option
+                                value="Santé"
+                                data-type="depense"
+                                <%= ancienneTransaction?.categorie === "Santé"
+                                    ? "selected"
+                                    : ""
+                                %>
+                            >
                                 Santé
                             </option>
 
 
-                            <option>
+                            <option
+                                value="Études"
+                                data-type="depense"
+                                <%= ancienneTransaction?.categorie === "Études"
+                                    ? "selected"
+                                    : ""
+                                %>
+                            >
                                 Études
                             </option>
 
 
-                            <option>
+                            <option
+                                value="Autres dépenses"
+                                data-type="depense"
+                                <%= ancienneTransaction?.categorie === "Autres dépenses"
+                                    ? "selected"
+                                    : ""
+                                %>
+                            >
                                 Autres dépenses
                             </option>
 
@@ -1038,15 +1013,31 @@
 
 
 
+                        <!-- REVENUS -->
+
                         <optgroup label="Revenus">
 
 
-                            <option>
+                            <option
+                                value="Salaire"
+                                data-type="revenu"
+                                <%= ancienneTransaction?.categorie === "Salaire"
+                                    ? "selected"
+                                    : ""
+                                %>
+                            >
                                 Salaire
                             </option>
 
 
-                            <option>
+                            <option
+                                value="Autres revenus"
+                                data-type="revenu"
+                                <%= ancienneTransaction?.categorie === "Autres revenus"
+                                    ? "selected"
+                                    : ""
+                                %>
+                            >
                                 Autres revenus
                             </option>
 
@@ -1054,7 +1045,50 @@
                         </optgroup>
 
 
+
+                        <!-- CATÉGORIE PERSONNALISÉE -->
+
+                        <option
+                            value="personnalisee"
+                            data-type="personnalisee"
+                            <%= ancienneTransaction?.categorie === "personnalisee"
+                                ? "selected"
+                                : ""
+                            %>
+                        >
+                            ✎ Autre catégorie...
+                        </option>
+
+
                     </select>
+
+
+                </div>
+
+
+
+                <!-- =====================================
+                     CATÉGORIE PERSONNALISÉE
+                     ===================================== -->
+
+                <div
+                    id="categorie-personnalisee-bloc"
+                    hidden
+                >
+
+                    <label for="categorie-personnalisee">
+                        Ma catégorie
+                    </label>
+
+
+                    <input
+                        type="text"
+                        id="categorie-personnalisee"
+                        name="categorie_personnalisee"
+                        maxlength="40"
+                        placeholder="Ex : Abonnement, Vacances, Prime..."
+                        value="<%= ancienneTransaction?.categorie_personnalisee || '' %>"
+                    >
 
 
                 </div>
@@ -1065,7 +1099,6 @@
 
                 <div>
 
-
                     <label for="date">
                         Date
                     </label>
@@ -1073,16 +1106,11 @@
 
                     <input
                         type="date"
-
                         id="date"
-
                         name="date"
-
-                        value="<%= dateAujourdhui %>"
-
+                        value="<%= ancienneTransaction?.date || dateAujourdhui %>"
                         required
                     >
-
 
                 </div>
 
@@ -1092,24 +1120,18 @@
 
                 <div class="bz-description-field">
 
-
                     <label for="description">
-
                         Description
-
                     </label>
 
 
                     <input
                         type="text"
-
                         id="description"
-
                         name="description"
-
                         maxlength="140"
-
                         placeholder="Ex : Courses au supermarché"
+                        value="<%= ancienneTransaction?.description || '' %>"
                     >
 
 
@@ -1121,19 +1143,13 @@
                     type="submit"
                     class="bz-button"
                 >
-
                     + Enregistrer la transaction
-
                 </button>
 
 
-
                 <p class="bz-form-hint">
-
-                    Choisissez une catégorie
-                    correspondant au type
-                    revenu ou dépense.
-
+                    Choisissez une catégorie existante
+                    ou créez votre propre catégorie.
                 </p>
 
 
@@ -1151,50 +1167,33 @@
 
 
 <!-- ==================================================
-     FENÊTRE PERSONNALISÉE DE CONFIRMATION
+     MODALE DE SUPPRESSION
      ================================================== -->
 
 <div
     id="deleteModal"
-
     class="bz-delete-modal-overlay"
-
     aria-hidden="true"
 >
 
 
     <div
         class="bz-delete-modal"
-
         role="dialog"
-
         aria-modal="true"
-
         aria-labelledby="deleteModalTitle"
     >
 
 
-        <!-- ICÔNE -->
-
         <div class="bz-delete-modal-icon">
-
             !
-
         </div>
 
 
-
-        <!-- TITRE -->
-
         <h2 id="deleteModalTitle">
-
             Supprimer cette transaction ?
-
         </h2>
 
-
-
-        <!-- MESSAGE -->
 
         <p>
 
@@ -1207,36 +1206,24 @@
         </p>
 
 
-
-        <!-- BOUTONS -->
-
         <div class="bz-delete-modal-actions">
 
 
             <button
                 type="button"
-
                 id="cancelDelete"
-
                 class="bz-delete-modal-cancel"
             >
-
                 Annuler
-
             </button>
-
 
 
             <button
                 type="button"
-
                 id="confirmDelete"
-
                 class="bz-delete-modal-confirm"
             >
-
                 Supprimer
-
             </button>
 
 
@@ -1250,10 +1237,18 @@
 
 
 
-<!-- JAVASCRIPT EXTERNE -->
+<!-- =====================================
+     JAVASCRIPT
+     ===================================== -->
 
 <script
     src="/confirm-delete.js"
+    defer
+></script>
+
+
+<script
+    src="/dashboard.js"
     defer
 ></script>
 
