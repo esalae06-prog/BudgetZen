@@ -2,36 +2,39 @@
 
 BudgetZen est une application web de gestion de budget personnel développée avec **Node.js**, **Express**, **EJS** et **SQLite**.
 
-L'application permet à un utilisateur de créer un compte, se connecter, enregistrer ses revenus et ses dépenses, définir un budget et consulter différentes statistiques financières depuis un tableau de bord.
+L'application permet à un utilisateur de créer un compte, de se connecter, d'enregistrer ses revenus et ses dépenses, de définir un budget et de consulter différentes statistiques financières depuis un tableau de bord personnel.
+
+Chaque utilisateur possède son propre espace et ne peut consulter que ses propres données.
 
 ---
 
-## Fonctionnalités
+# 1. Sujet et fonctionnalités de l'application
 
-BudgetZen permet de :
+L'objectif de BudgetZen est de permettre à un utilisateur de suivre simplement ses finances personnelles.
 
-- créer un compte utilisateur ;
-- se connecter et se déconnecter ;
-- accéder à un tableau de bord personnel ;
-- ajouter des revenus ;
-- ajouter des dépenses ;
-- choisir une catégorie de transaction ;
-- consulter les dernières transactions ;
-- supprimer une transaction ;
-- définir un budget ;
-- consulter le total des revenus ;
-- consulter le total des dépenses ;
-- consulter le solde ;
-- visualiser la répartition des dépenses par catégorie ;
-- consulter des statistiques financières.
+Les principales fonctionnalités sont :
 
-Chaque utilisateur accède uniquement à ses propres données.
+- création d'un compte utilisateur ;
+- connexion et déconnexion ;
+- accès à un tableau de bord protégé ;
+- ajout de revenus ;
+- ajout de dépenses ;
+- choix d'une catégorie de transaction ;
+- consultation des dernières transactions ;
+- suppression d'une transaction ;
+- définition d'un budget ;
+- calcul du total des revenus ;
+- calcul du total des dépenses ;
+- calcul du solde ;
+- affichage de statistiques financières ;
+- répartition des dépenses par catégorie ;
+- gestion des erreurs 404 et 500.
 
 ---
 
-## Technologies utilisées
+# 2. Technologies utilisées
 
-### Back-end
+## Back-end
 
 - Node.js
 - Express.js
@@ -44,16 +47,16 @@ Chaque utilisateur accède uniquement à ses propres données.
 - Helmet
 - express-rate-limit
 
-### Front-end
+## Front-end
 
+- EJS
 - HTML
 - CSS
 - JavaScript
-- EJS
 
 ---
 
-## Prérequis
+# 3. Prérequis
 
 Avant de lancer l'application, il faut avoir installé :
 
@@ -73,17 +76,15 @@ git --version
 
 ---
 
-# Installation
+# 4. Installation
 
-## 1. Cloner le projet
-
-Ouvrir un terminal puis exécuter :
+## Étape 1 : cloner le projet
 
 ```bash
 git clone https://github.com/esalae06-prog/BudgetZen.git
 ```
 
-Entrer ensuite dans le dossier du projet :
+Entrer dans le dossier du projet :
 
 ```bash
 cd BudgetZen
@@ -91,39 +92,39 @@ cd BudgetZen
 
 ---
 
-## 2. Installer les dépendances
-
-Exécuter :
+## Étape 2 : installer les dépendances
 
 ```bash
 npm install
 ```
 
-Cette commande installe automatiquement les dépendances présentes dans le fichier `package.json`.
+Les dépendances nécessaires sont déclarées dans le fichier `package.json`.
 
-Il n'est donc pas nécessaire de récupérer le dossier `node_modules`.
+Le dossier `node_modules` n'est donc pas fourni dans le dépôt, car il peut être recréé avec `npm install`.
 
 ---
 
-## 3. Créer le fichier `.env`
+# 5. Configuration du fichier `.env`
 
-Le vrai fichier `.env` n'est volontairement pas présent sur GitHub pour des raisons de sécurité.
+Le vrai fichier `.env` n'est pas fourni dans le dépôt pour des raisons de sécurité.
 
-Un fichier `.env.example` est fourni.
+Un fichier `.env.example` est fourni avec des valeurs fictives.
 
-### Sous Windows PowerShell
+## Sous Windows PowerShell
+
+Créer le fichier `.env` avec :
 
 ```powershell
 Copy-Item .env.example .env
 ```
 
-Puis ouvrir le fichier :
+Puis l'ouvrir :
 
 ```powershell
 notepad .env
 ```
 
-### Sous Linux / macOS
+## Sous Linux ou macOS
 
 ```bash
 cp .env.example .env
@@ -137,23 +138,15 @@ PORT=3000
 NODE_ENV=development
 ```
 
-Il est recommandé de remplacer la valeur de `SESSION_SECRET` par une chaîne longue et difficile à deviner.
+Il est recommandé de remplacer `SESSION_SECRET` par une chaîne longue et difficile à deviner.
 
-Exemple :
-
-```env
-SESSION_SECRET=BudgetZen_Secret_Local_2026_Change_Me_123456789
-PORT=3000
-NODE_ENV=development
-```
-
-> Ne jamais publier un vrai secret de session sur GitHub.
+Aucun mot de passe réel, aucune clé privée et aucun secret réel ne sont présents dans le dépôt.
 
 ---
 
-# Lancement de l'application
+# 6. Démarrage de l'application
 
-## Mode normal
+Pour lancer l'application :
 
 ```bash
 npm start
@@ -166,27 +159,21 @@ Base de données BudgetZen initialisée !
 Serveur lancé sur http://localhost:3000
 ```
 
-Ouvrir ensuite dans un navigateur :
+Ouvrir ensuite dans le navigateur :
 
 ```text
 http://localhost:3000
 ```
 
----
-
-## Mode développement
-
-Il est également possible d'utiliser :
+Pour lancer l'application en mode développement :
 
 ```bash
 npm run dev
 ```
 
-Ce mode redémarre automatiquement le serveur lorsqu'un fichier est modifié.
-
 ---
 
-# Base de données
+# 7. Préparation de la base de données
 
 BudgetZen utilise **SQLite**.
 
@@ -202,21 +189,21 @@ Le fichier local :
 budgetzen.db
 ```
 
-n'est pas envoyé sur GitHub.
+n'est pas présent dans le dépôt GitHub.
 
-Il sera créé automatiquement lorsque l'application sera lancée.
+Il est créé automatiquement lorsque l'application est lancée.
 
-Il n'est donc pas nécessaire d'importer manuellement une base de données.
+Aucune importation manuelle de base de données n'est donc nécessaire.
 
 ---
 
-# Données de démonstration
+# 8. Données de démonstration
 
 Aucun compte utilisateur réel n'est fourni dans le dépôt.
 
-Pour tester l'application, il suffit de créer un compte depuis la page d'inscription.
+Pour tester l'application, il suffit de créer un nouveau compte depuis la page d'inscription.
 
-Par exemple :
+Exemple :
 
 ```text
 Nom : Utilisateur Test
@@ -224,80 +211,86 @@ Email : test@example.com
 Mot de passe : choisir un mot de passe respectant les règles demandées
 ```
 
-Le mot de passe sera automatiquement haché avant son stockage dans la base de données.
+Le mot de passe est haché avant son stockage dans la base de données.
 
 ---
 
-# Test rapide de l'application
+# 9. Procédure pour tester la connexion
 
-Après avoir lancé BudgetZen :
+Après avoir lancé l'application :
 
-1. ouvrir `http://localhost:3000` ;
-2. créer un compte ;
-3. se connecter ;
-4. accéder au tableau de bord ;
-5. ajouter un revenu ;
-6. ajouter une dépense ;
-7. définir un budget ;
-8. vérifier les statistiques ;
-9. supprimer une transaction ;
-10. se déconnecter.
+1. ouvrir :
 
----
+```text
+http://localhost:3000
+```
 
-# Authentification
+2. créer un nouveau compte ;
 
-Lors de l'inscription :
+3. se connecter avec ce compte ;
 
-1. les données du formulaire sont vérifiées côté serveur ;
-2. le mot de passe est haché avec `bcryptjs` ;
-3. le hash du mot de passe est enregistré dans SQLite ;
-4. le mot de passe original n'est jamais stocké en clair.
+4. vérifier que l'utilisateur est redirigé vers son tableau de bord.
 
 Lors de la connexion :
 
-1. le serveur recherche l'utilisateur à partir de son adresse email ;
-2. `bcrypt` compare le mot de passe fourni avec le hash enregistré ;
-3. si les informations sont correctes, une session est créée ;
-4. l'identifiant de l'utilisateur est conservé dans la session ;
-5. l'utilisateur est redirigé vers son tableau de bord.
+- le serveur recherche l'utilisateur grâce à son adresse email ;
+- le mot de passe saisi est comparé au hash enregistré avec `bcryptjs` ;
+- si les informations sont correctes, une session est créée ;
+- l'utilisateur est ensuite redirigé vers le tableau de bord.
+
+Les mots de passe ne sont jamais stockés en clair dans la base de données.
 
 ---
 
-# Route protégée
+# 10. Procédure pour tester une fonctionnalité protégée
 
-Le tableau de bord est une ressource protégée.
-
-Route principale :
+La route suivante est protégée :
 
 ```text
 /dashboard
 ```
 
-Un utilisateur non authentifié ne doit pas pouvoir accéder directement à cette route.
+Pour vérifier la protection :
 
-Un middleware vérifie la présence de la session avant d'autoriser l'accès.
+1. créer un compte ;
+2. se connecter ;
+3. accéder au tableau de bord ;
+4. ajouter par exemple un revenu ou une dépense ;
+5. se déconnecter ;
+6. essayer d'accéder directement à :
 
-Si l'utilisateur n'est pas connecté, il est redirigé vers la page de connexion.
+```text
+http://localhost:3000/dashboard
+```
+
+Un utilisateur non authentifié ne doit pas pouvoir accéder au tableau de bord.
+
+Il est redirigé vers la page de connexion.
+
+Cette vérification est réalisée côté serveur grâce à un middleware d'authentification.
 
 ---
 
-# Protection des données utilisateurs
+# 11. Test rapide de l'application
 
-Chaque transaction est associée à l'identifiant de son propriétaire.
+Après le lancement :
 
-Les requêtes vers la base utilisent l'identifiant de l'utilisateur connecté afin qu'un utilisateur ne puisse pas accéder aux transactions d'un autre compte.
-
-Par exemple, une suppression vérifie à la fois :
-
-- l'identifiant de la transaction ;
-- l'identifiant de l'utilisateur connecté.
+1. créer un compte ;
+2. se connecter ;
+3. accéder au tableau de bord ;
+4. ajouter un revenu ;
+5. ajouter une dépense ;
+6. définir un budget ;
+7. consulter les statistiques ;
+8. supprimer une transaction ;
+9. se déconnecter ;
+10. essayer d'accéder à `/dashboard` sans être connecté.
 
 ---
 
-# Sécurité
+# 12. Authentification et sécurité
 
-Plusieurs mécanismes de sécurité sont présents dans BudgetZen.
+BudgetZen utilise plusieurs mécanismes de sécurité.
 
 ## Hachage des mots de passe
 
@@ -307,33 +300,41 @@ Les mots de passe sont hachés avec :
 bcryptjs
 ```
 
-Ils ne sont jamais stockés en clair dans la base.
+Ils ne sont jamais stockés en clair dans SQLite.
 
 ---
 
 ## Sessions
 
-Les connexions sont maintenues avec :
+Les connexions sont gérées avec :
 
 ```text
 express-session
 ```
 
-Les sessions sont stockées dans SQLite avec :
+Les sessions sont stockées dans SQLite grâce à :
 
 ```text
 better-sqlite3-session-store
 ```
 
+L'identifiant de l'utilisateur connecté est conservé dans la session.
+
 ---
 
-## Cookies
+## Protection des routes
 
-Les cookies de session utilisent notamment des options de sécurité telles que :
+Le tableau de bord est protégé par un middleware.
 
-- `HttpOnly`
-- `SameSite`
-- `Secure` en environnement de production
+Un utilisateur non connecté ne peut pas accéder aux fonctionnalités privées.
+
+---
+
+## Protection des données utilisateurs
+
+Chaque transaction est associée à son propriétaire.
+
+Les requêtes utilisent l'identifiant de l'utilisateur connecté afin d'éviter qu'un utilisateur puisse accéder ou supprimer les données d'un autre utilisateur.
 
 ---
 
@@ -345,13 +346,13 @@ Les formulaires sensibles utilisent un token CSRF afin de réduire le risque de 
 
 ## Rate limiting
 
-Les routes sensibles comme la connexion et l'inscription sont protégées avec :
+Les routes sensibles comme la connexion et l'inscription utilisent :
 
 ```text
 express-rate-limit
 ```
 
-Cela permet de limiter le nombre de tentatives pendant une période donnée.
+afin de limiter le nombre de tentatives pendant une période donnée.
 
 ---
 
@@ -363,17 +364,15 @@ L'application utilise :
 helmet
 ```
 
-pour ajouter différents en-têtes HTTP de sécurité.
+pour ajouter plusieurs en-têtes HTTP de sécurité.
 
 ---
 
 ## Requêtes SQL paramétrées
 
-Les valeurs fournies par les utilisateurs ne sont pas directement concaténées dans les requêtes SQL.
+Les requêtes SQL utilisent des paramètres afin de réduire le risque d'injection SQL.
 
-Des requêtes paramétrées sont utilisées afin de réduire le risque d'injection SQL.
-
-Exemple de principe :
+Exemple :
 
 ```sql
 SELECT *
@@ -383,33 +382,31 @@ WHERE email = ?
 
 ---
 
-## Validation côté serveur
+## Cookies
 
-Les données provenant des formulaires sont vérifiées côté serveur.
+Les cookies de session utilisent notamment :
 
-La validation HTML ou JavaScript côté navigateur n'est pas considérée comme suffisante pour garantir la sécurité.
-
----
-
-# Gestion des erreurs
-
-BudgetZen contient une page personnalisée pour les routes inexistantes :
-
-```text
-views/404.ejs
-```
-
-et une page pour les erreurs internes du serveur :
-
-```text
-views/500.ejs
-```
-
-Les détails techniques sensibles ne sont pas affichés directement à l'utilisateur.
+- `HttpOnly`
+- `SameSite`
+- `Secure` en environnement de production
 
 ---
 
-# Structure du projet
+# 13. Base de données et montants
+
+Les transactions sont stockées dans SQLite.
+
+Les montants sont enregistrés en centimes afin d'éviter les problèmes d'arrondi avec les nombres décimaux.
+
+Exemple :
+
+```text
+12,50 € = 1250 centimes
+```
+
+---
+
+# 14. Structure du projet
 
 ```text
 BudgetZen/
@@ -439,9 +436,9 @@ BudgetZen/
 
 ---
 
-# Rôle des principaux fichiers
+# 15. Rôle des principaux fichiers
 
-### `app.js`
+## `app.js`
 
 Fichier principal de l'application.
 
@@ -449,70 +446,53 @@ Il contient notamment :
 
 - la configuration d'Express ;
 - les middlewares ;
-- la configuration des sessions ;
 - les routes ;
 - l'authentification ;
-- les contrôles d'accès ;
+- les sessions ;
 - la gestion des transactions ;
 - la gestion du budget ;
+- les contrôles d'accès ;
 - les protections de sécurité ;
 - la gestion des erreurs.
 
-### `db.js`
+## `db.js`
 
-Gère l'initialisation de la base de données SQLite et la création des tables nécessaires.
+Ce fichier initialise la base de données SQLite et les tables nécessaires.
 
-### `views/`
+## `views/`
 
-Contient les vues EJS générées par le serveur.
+Contient les vues EJS affichées par le serveur.
 
-### `public/`
+## `public/`
 
-Contient les ressources accessibles au navigateur :
+Contient les fichiers accessibles au navigateur :
 
 - CSS ;
 - JavaScript côté client.
 
 ---
 
-# Catégories
+# 16. Gestion des erreurs
 
-Les transactions utilisent des catégories prédéfinies afin de garder les statistiques cohérentes.
-
-Exemples de dépenses :
-
-- Alimentation
-- Logement
-- Transport
-- Loisirs
-- Santé
-- Études
-- Autres dépenses
-
-Exemples de revenus :
-
-- Salaire
-- Autres revenus
-
----
-
-# Montants
-
-Les montants sont stockés en centimes dans la base de données.
-
-Par exemple :
+Une page personnalisée est utilisée lorsqu'une route n'existe pas :
 
 ```text
-12,50 € → 1250 centimes
+views/404.ejs
 ```
 
-Cette méthode permet d'éviter les problèmes d'arrondi liés aux nombres décimaux.
+Une page spécifique est également utilisée en cas d'erreur interne :
+
+```text
+views/500.ejs
+```
+
+Les informations techniques sensibles ne sont pas affichées directement à l'utilisateur.
 
 ---
 
-# Fichiers non versionnés
+# 17. Fichiers non versionnés
 
-Les fichiers suivants ne sont volontairement pas envoyés sur GitHub :
+Les fichiers suivants ne sont volontairement pas présents sur GitHub :
 
 ```text
 .env
@@ -526,17 +506,25 @@ Ils sont exclus grâce au fichier :
 .gitignore
 ```
 
+Le dépôt contient à la place :
+
+```text
+.env.example
+```
+
+avec des valeurs fictives.
+
 ---
 
-# Vérification des dépendances
+# 18. Vérification des dépendances
 
-Pour vérifier les vulnérabilités connues des dépendances :
+Pour rechercher les vulnérabilités connues dans les dépendances :
 
 ```bash
 npm audit
 ```
 
-Lors de la préparation de la version remise, le projet retournait :
+Lors de la préparation de la version remise, la commande retournait :
 
 ```text
 found 0 vulnerabilities
@@ -544,19 +532,21 @@ found 0 vulnerabilities
 
 ---
 
-# Limitations connues
+# 19. Limitations connues
 
-- Les catégories de transactions sont prédéfinies.
-- L'application est principalement conçue dans un contexte pédagogique.
-- La base SQLite est locale.
-- Une mise en production réelle nécessiterait notamment un hébergement adapté et HTTPS.
-- Le projet ne fournit pas de comptes utilisateurs réels ou de mots de passe de démonstration.
+Les limitations actuelles de BudgetZen sont les suivantes :
+
+- les catégories de transactions sont prédéfinies ;
+- la base SQLite est locale ;
+- l'application est principalement conçue dans un contexte pédagogique ;
+- aucun compte utilisateur réel n'est fourni avec le projet ;
+- une mise en production réelle nécessiterait un hébergement adapté et HTTPS.
 
 ---
 
-# Réinstallation complète
+# 20. Réinstallation complète
 
-Pour tester le projet sur une nouvelle machine :
+Pour installer BudgetZen sur une nouvelle machine :
 
 ```bash
 git clone https://github.com/esalae06-prog/BudgetZen.git
@@ -570,7 +560,7 @@ Sous Windows :
 Copy-Item .env.example .env
 ```
 
-Puis :
+Puis lancer :
 
 ```bash
 npm start
@@ -584,7 +574,7 @@ http://localhost:3000
 
 ---
 
-# Résumé du parcours
+# 21. Résumé du fonctionnement
 
 ```text
 Navigateur
