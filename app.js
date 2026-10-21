@@ -1,1627 +1,1628 @@
-require("dotenv").config();
+<!DOCTYPE html>
+<html lang="fr">
 
-const express = require("express");
-const helmet = require("helmet");
-const bcrypt = require("bcryptjs");
-const session = require("express-session");
-const rateLimit = require("express-rate-limit");
-const crypto = require("node:crypto");
-const path = require("node:path");
-const db = require("./db");
+<head>
 
-const SQLiteStore =
-    require("better-sqlite3-session-store")(session);
+    <meta charset="UTF-8">
 
-const app = express();
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
-const isProduction =
-    process.env.NODE_ENV === "production";
+    <title>
+        Dashboard - BudgetZen
+    </title>
 
-const SESSION_COOKIE_NAME = "budgetzen.sid";
+    <link
+        rel="stylesheet"
+        href="/styles.css"
+    >
 
+</head>
 
-// ========================================
-// 1. CONFIGURATION GÉNÉRALE
-// ========================================
 
-if (
-    !process.env.SESSION_SECRET ||
-    process.env.SESSION_SECRET.length < 32
-) {
-    throw new Error(
-        "SESSION_SECRET manquant ou trop court dans .env"
-    );
-}
+<body class="bz-body">
 
+<div class="bz-app">
 
-if (isProduction) {
-    app.set("trust proxy", 1);
-}
 
+    <!-- =====================================
+         MENU LATÉRAL
+         ===================================== -->
 
-app.use(helmet());
+    <aside class="bz-sidebar">
 
-app.disable("x-powered-by");
+        <div class="bz-logo">
+            ◈ BudgetZen
+        </div>
 
+        <p class="bz-menu-label">
+            PRINCIPAL
+        </p>
 
-app.use(
-    express.urlencoded({
-        extended: false,
-        limit: "10kb"
-    })
-);
 
+        <nav
+            class="bz-nav"
+            aria-label="Navigation principale"
+        >
 
-app.use(
-    express.static(
-        path.join(__dirname, "public")
-    )
-);
+            <a
+                href="#apercu"
+                class="bz-nav-active"
+            >
+                ▦ Tableau de bord
+            </a>
 
 
-app.set(
-    "views",
-    path.join(__dirname, "views")
-);
+            <a href="#statistiques">
+                ◫ Statistiques et budget
+            </a>
 
-app.set("view engine", "ejs");
 
+            <a href="#epargne">
+                ◎ Objectifs d'épargne
+            </a>
 
-// ========================================
-// 2. GESTION DES SESSIONS
-// ========================================
 
-app.use(
-    session({
-        name: SESSION_COOKIE_NAME,
+            <a href="#transactions">
+                ⇄ Transactions
+            </a>
 
-        store: new SQLiteStore({
-            client: db
-        }),
 
-        secret: process.env.SESSION_SECRET,
+            <a href="#ajout">
+                ＋ Nouvelle opération
+            </a>
 
-        resave: false,
+        </nav>
 
-        saveUninitialized: false,
 
-        cookie: {
-            httpOnly: true,
-            sameSite: "lax",
-            secure: isProduction,
-            maxAge: 60 * 60 * 1000
-        }
-    })
-);
+        <div class="bz-sidebar-bottom">
 
+            <div class="bz-profile">
 
-// Empêcher la mise en cache des pages privées
-app.use((req, res, next) => {
+                <span class="bz-avatar">
 
-    if (req.session?.utilisateurId) {
+                    <%= utilisateur.nom
+                        .charAt(0)
+                        .toUpperCase()
+                    %>
 
-        res.set(
-            "Cache-Control",
-            "no-store, no-cache, must-revalidate, private"
-        );
+                </span>
 
-        res.set("Pragma", "no-cache");
-        res.set("Expires", "0");
-    }
 
-    next();
-});
+                <div>
 
+                    <strong>
+                        <%= utilisateur.nom %>
+                    </strong>
 
-// ========================================
-// 3. PROTECTION CSRF
-// ========================================
+                    <small>
+                        Mon compte
+                    </small>
 
-function genererToken(req) {
+                </div>
 
-    if (!req.session.csrfToken) {
+            </div>
 
-        req.session.csrfToken =
-            crypto
-                .randomBytes(32)
-                .toString("hex");
-    }
 
-    return req.session.csrfToken;
-}
+            <form
+                action="/deconnexion"
+                method="POST"
+            >
 
+                <input
+                    type="hidden"
+                    name="_csrf"
+                    value="<%= csrfToken %>"
+                >
 
-function verifierCsrf(req, res, next) {
+                <button
+                    class="bz-logout"
+                    type="submit"
+                >
+                    ↪ Se déconnecter
+                </button>
 
-    const attendu =
-        Buffer.from(
-            genererToken(req)
-        );
+            </form>
 
-    const recu =
-        Buffer.from(
-            typeof req.body._csrf === "string"
-                ? req.body._csrf
-                : ""
-        );
+        </div>
 
+    </aside>
 
-    if (
-        attendu.length !== recu.length ||
-        !crypto.timingSafeEqual(
-            attendu,
-            recu
-        )
-    ) {
 
-        return res
-            .status(403)
-            .send(
-                "Formulaire non valide ou expiré."
-            );
-    }
+    <!-- =====================================
+         CONTENU PRINCIPAL
+         ===================================== -->
 
-    next();
-}
+    <main
+        class="bz-main"
+        id="apercu"
+    >
 
 
-// ========================================
-// 4. PROTÉGER LES ROUTES PRIVÉES
-// ========================================
+        <!-- =====================================
+             HEADER
+             ===================================== -->
 
-function exigerConnexion(req, res, next) {
+        <header class="bz-header">
 
-    if (!req.session.utilisateurId) {
+            <div>
 
-        return res.redirect(
-            "/connexion"
-        );
-    }
+                <p class="bz-eyebrow">
+                    MON ESPACE FINANCIER
+                </p>
 
-    next();
-}
+                <h1>
+                    Bonjour,
+                    <%= utilisateur.nom %>
+                    👋
+                </h1>
 
+                <p class="bz-muted">
+                    Voici un aperçu de votre situation financière.
+                </p>
 
-// ========================================
-// 5. RATE LIMIT
-// ========================================
+            </div>
 
-const limiter = rateLimit({
+        </header>
 
-    windowMs:
-        15 * 60 * 1000,
 
-    limit: 10,
+        <!-- =====================================
+             RÉSUMÉ FINANCIER
+             ===================================== -->
 
-    standardHeaders: "draft-8",
+        <section
+            class="bz-stats"
+            aria-label="Résumé financier"
+        >
 
-    legacyHeaders: false
-});
 
+            <!-- SOLDE -->
 
-// ========================================
-// 6. PAGE D'ACCUEIL
-// ========================================
+            <article class="bz-stat">
 
-app.get("/", (req, res) => {
+                <div class="bz-stat-icon bz-purple">
+                    ◈
+                </div>
 
-    if (req.session.utilisateurId) {
+                <p>
+                    Solde total
+                </p>
 
-        return res.redirect(
-            "/dashboard"
-        );
-    }
+                <h2>
+                    <%= formatEuro(solde) %>
+                </h2>
 
-    res.render("index");
-});
+                <small>
+                    Depuis la création du compte
+                </small>
 
+            </article>
 
-// ========================================
-// 7. PAGE D'INSCRIPTION
-// ========================================
 
-app.get(
-    "/inscription",
-    (req, res) => {
+            <!-- REVENUS -->
 
-        if (req.session.utilisateurId) {
+            <article class="bz-stat">
 
-            return res.redirect(
-                "/dashboard"
-            );
-        }
+                <div class="bz-stat-icon bz-green">
+                    ↗
+                </div>
 
-        res.render(
-            "inscription",
-            {
-                erreur: null,
-                succes: false,
-                csrfToken:
-                    genererToken(req)
-            }
-        );
-    }
-);
+                <p>
+                    Revenus du mois
+                </p>
 
+                <h2 class="bz-positive">
 
-// ========================================
-// 8. INSCRIPTION
-// ========================================
+                    <%= formatEuro(
+                        statistiques.revenus
+                    ) %>
 
-app.post(
-    "/inscription",
-    limiter,
-    verifierCsrf,
+                </h2>
 
-    async (req, res, next) => {
+                <small>
+                    Total des entrées
+                </small>
 
-        const nom =
-            typeof req.body.nom === "string"
-                ? req.body.nom.trim()
-                : "";
+            </article>
 
-        const email =
-            typeof req.body.email === "string"
-                ? req.body.email
-                    .trim()
-                    .toLowerCase()
-                : "";
 
-        const password =
-            typeof req.body.password === "string"
-                ? req.body.password
-                : "";
+            <!-- DÉPENSES -->
 
-        const confirmation =
-            typeof req.body.confirmation === "string"
-                ? req.body.confirmation
-                : "";
+            <article class="bz-stat">
 
+                <div class="bz-stat-icon bz-red">
+                    ↘
+                </div>
 
-        function afficherErreur(message) {
+                <p>
+                    Dépenses du mois
+                </p>
 
-            return res
-                .status(400)
-                .render(
-                    "inscription",
-                    {
-                        erreur: message,
-                        succes: false,
-                        csrfToken:
-                            genererToken(req)
-                    }
-                );
-        }
+                <h2 class="bz-negative">
 
+                    <%= formatEuro(
+                        statistiques.depenses
+                    ) %>
 
-        // Vérification nom + email
-        if (
-            nom.length < 2 ||
-            nom.length > 80 ||
-            email.length > 254 ||
-            !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
-                email
-            )
-        ) {
+                </h2>
 
-            return afficherErreur(
-                "Nom ou adresse email invalide."
-            );
-        }
+                <small>
+                    Total des sorties
+                </small>
 
+            </article>
 
-        // Mot de passe fort
-        const motDePasseFort =
 
-            password.length >= 16 &&
+            <!-- ÉPARGNE -->
 
-            /[A-Za-z]/.test(
-                password
-            ) &&
+            <article class="bz-stat">
 
-            /[0-9]/.test(
-                password
-            ) &&
+                <div class="bz-stat-icon bz-blue">
+                    ◎
+                </div>
 
-            /[^A-Za-z0-9\s]/.test(
-                password
-            ) &&
+                <p>
+                    Épargne du mois
+                </p>
 
-            Buffer.byteLength(
-                password,
-                "utf8"
-            ) <= 72;
+                <h2>
 
+                    <%= formatEuro(
+                        statistiques.revenus -
+                        statistiques.depenses
+                    ) %>
 
-        if (!motDePasseFort) {
+                </h2>
 
-            return afficherErreur(
+                <small>
+                    Revenus moins dépenses
+                </small>
 
-                "Le mot de passe doit contenir au moins " +
-                "16 caractères, une lettre, un chiffre et " +
-                "un caractère spécial."
-            );
-        }
+            </article>
 
+        </section>
 
-        if (
-            password !== confirmation
-        ) {
 
-            return afficherErreur(
-                "Les mots de passe ne correspondent pas."
-            );
-        }
+        <!-- =====================================
+             ÉVOLUTION + BUDGET
+             ===================================== -->
 
+        <div class="bz-grid">
 
-        try {
 
-            const existe =
-                db.prepare(`
-                    SELECT id
-                    FROM utilisateurs
-                    WHERE email = ?
-                `).get(email);
+            <!-- ÉVOLUTION -->
 
+            <section
+                class="bz-panel"
+                id="statistiques"
+            >
 
-            if (existe) {
+                <div class="bz-panel-heading">
 
-                return afficherErreur(
-                    "Cet email est déjà utilisé."
-                );
-            }
+                    <div>
 
+                        <h2>
+                            Évolution financière
+                        </h2>
 
-            const hash =
-                await bcrypt.hash(
-                    password,
-                    12
-                );
+                        <p class="bz-muted">
+                            Les six derniers mois
+                        </p>
 
+                    </div>
 
-            const resultat =
-                db.prepare(`
-                    INSERT INTO utilisateurs
-                    (
-                        nom,
-                        email,
-                        mot_de_passe_hash
-                    )
-                    VALUES (?, ?, ?)
-                `).run(
-                    nom,
-                    email,
-                    hash
-                );
+                </div>
 
 
-            // Nouvelle session
-            req.session.regenerate(
-                (err) => {
+                <div class="bz-legend">
 
-                    if (err) {
-                        return next(err);
-                    }
+                    <span>
 
+                        <i class="bz-dot-income"></i>
 
-                    req.session.utilisateurId =
-                        Number(
-                            resultat.lastInsertRowid
-                        );
+                        Revenus
 
+                    </span>
 
-                    genererToken(req);
 
+                    <span>
 
-                    req.session.save(
-                        (err) => {
+                        <i class="bz-dot-expense"></i>
 
-                            if (err) {
-                                return next(err);
-                            }
+                        Dépenses
 
+                    </span>
 
-                            res.redirect(
-                                "/dashboard"
-                            );
-                        }
-                    );
-                }
-            );
+                </div>
 
-        } catch (error) {
 
-            if (
-                error.code ===
-                "SQLITE_CONSTRAINT_UNIQUE"
-            ) {
+                <div class="bz-chart">
 
-                return afficherErreur(
-                    "Cet email est déjà utilisé."
-                );
-            }
+                    <% graphique.forEach(function(m) { %>
 
-            next(error);
-        }
-    }
-);
+                        <div class="bz-chart-row">
 
+                            <span>
+                                <%= m.label %>
+                            </span>
 
-// ========================================
-// 9. PAGE DE CONNEXION
-// ========================================
 
-app.get(
-    "/connexion",
-    (req, res) => {
+                            <div class="bz-chart-bars">
 
-        if (req.session.utilisateurId) {
+                                <progress
+                                    class="bz-progress-income"
+                                    max="<%= maximumGraphique %>"
+                                    value="<%= m.revenus %>"
+                                ></progress>
 
-            return res.redirect(
-                "/dashboard"
-            );
-        }
 
+                                <progress
+                                    class="bz-progress-expense"
+                                    max="<%= maximumGraphique %>"
+                                    value="<%= m.depenses %>"
+                                ></progress>
 
-        res.render(
-            "connexion",
-            {
-                erreur: null,
+                            </div>
 
-                csrfToken:
-                    genererToken(req)
-            }
-        );
-    }
-);
+                        </div>
 
+                    <% }); %>
 
-// ========================================
-// 10. AUTHENTIFICATION
-// ========================================
+                </div>
 
-app.post(
-    "/connexion",
-    limiter,
-    verifierCsrf,
+            </section>
 
-    async (req, res, next) => {
 
-        try {
+            <!-- =====================================
+                 BUDGET
+                 ===================================== -->
 
-            const email =
-                typeof req.body.email === "string"
-                    ? req.body.email
-                        .trim()
-                        .toLowerCase()
-                    : "";
+            <section
+                class="bz-panel"
+                id="budget"
+            >
 
+                <h2>
+                    Mon budget mensuel
+                </h2>
 
-            const password =
-                typeof req.body.password === "string"
-                    ? req.body.password
-                    : "";
+                <p class="bz-muted">
+                    Gardez le contrôle de vos dépenses.
+                </p>
 
 
-            const utilisateur =
-                db.prepare(`
-                    SELECT
-                        id,
-                        nom,
-                        email,
-                        mot_de_passe_hash
-                    FROM utilisateurs
-                    WHERE email = ?
-                `).get(email);
+                <div class="bz-budget-number">
 
+                    <%= formatEuro(
+                        statistiques.depenses
+                    ) %>
 
-            const valide =
-                utilisateur
-                    ? await bcrypt.compare(
-                        password,
-                        utilisateur
-                            .mot_de_passe_hash
-                    )
-                    : false;
+                </div>
 
 
-            if (!valide) {
+                <p class="bz-muted">
 
-                return res
-                    .status(401)
-                    .render(
-                        "connexion",
-                        {
-                            erreur:
-                                "Email ou mot de passe incorrect.",
+                    sur
 
-                            csrfToken:
-                                genererToken(req)
-                        }
-                    );
-            }
+                    <%= limite > 0
+                        ? formatEuro(limite)
+                        : "aucune limite définie"
+                    %>
 
+                </p>
 
-            // Protection contre fixation de session
-            req.session.regenerate(
-                (err) => {
 
-                    if (err) {
-                        return next(err);
-                    }
+                <progress
+                    class="bz-budget-progress"
+                    max="100"
+                    value="<%= utilisation %>"
+                ></progress>
 
 
-                    req.session.utilisateurId =
-                        utilisateur.id;
+                <p class="bz-small">
 
+                    <%= utilisation %>%
+                    du budget utilisé
 
-                    genererToken(req);
+                </p>
 
 
-                    req.session.save(
-                        (err) => {
+                <form
+                    action="/budget/enregistrer"
+                    method="POST"
+                    class="bz-budget-form"
+                >
 
-                            if (err) {
-                                return next(err);
-                            }
+                    <input
+                        type="hidden"
+                        name="_csrf"
+                        value="<%= csrfToken %>"
+                    >
 
 
-                            res.redirect(
-                                "/dashboard"
-                            );
-                        }
-                    );
-                }
-            );
+                    <label for="budget-montant">
+                        Définir mon budget (€)
+                    </label>
 
-        } catch (error) {
 
-            next(error);
-        }
-    }
-);
+                    <input
+                        type="number"
+                        id="budget-montant"
+                        name="montant"
+                        min="0.01"
+                        max="1000000"
+                        step="0.01"
+                        required
+                        placeholder="Ex : 800"
+                        value="<%= limite > 0
+                            ? (limite / 100).toFixed(2)
+                            : ''
+                        %>"
+                    >
 
 
-// ========================================
-// 11. TABLEAU DE BORD
-// ========================================
+                    <button
+                        type="submit"
+                        class="bz-button"
+                    >
 
-app.get(
-    "/dashboard",
-    exigerConnexion,
+                        <%= limite > 0
+                            ? "Modifier mon budget"
+                            : "Enregistrer"
+                        %>
 
-    (req, res, next) => {
+                    </button>
 
-        try {
+                </form>
 
-            // Message temporaire transaction
-            const erreurTransaction =
-                req.session
-                    .erreurTransaction ||
-                null;
+            </section>
 
+        </div>
 
-            const ancienneTransaction =
-                req.session
-                    .ancienneTransaction ||
-                null;
 
+        <!-- =====================================
+             OBJECTIFS D'ÉPARGNE
+             ===================================== -->
 
-            delete req.session
-                .erreurTransaction;
+        <section
+            class="bz-panel bz-savings-section"
+            id="epargne"
+        >
 
-            delete req.session
-                .ancienneTransaction;
 
+            <!-- HEADER ÉPARGNE -->
 
-            const id =
-                req.session
-                    .utilisateurId;
+            <div class="bz-savings-header">
 
+                <div>
 
-            // Utilisateur
-            const utilisateur =
-                db.prepare(`
-                    SELECT
-                        id,
-                        nom,
-                        email
-                    FROM utilisateurs
-                    WHERE id = ?
-                `).get(id);
+                    <p class="bz-eyebrow">
+                        ÉPARGNE INTELLIGENTE
+                    </p>
 
+                    <h2>
+                        ◎ Mes objectifs d'épargne
+                    </h2>
 
-            if (!utilisateur) {
+                    <p class="bz-muted">
 
-                return req.session.destroy(
-                    (err) => {
+                        BudgetZen détecte automatiquement
+                        votre épargne du mois à partir de vos
+                        revenus et de vos dépenses.
 
-                        if (err) {
-                            return next(err);
-                        }
+                    </p>
 
-                        res.redirect(
-                            "/connexion"
-                        );
-                    }
-                );
-            }
+                </div>
 
 
-            const maintenant =
-                new Date();
+                <div class="bz-savings-detected">
 
+                    <span>
+                        Épargne détectée ce mois-ci
+                    </span>
 
-            const moisActuel =
+                    <strong>
 
-                `${maintenant.getFullYear()}-${String(
-                    maintenant.getMonth() + 1
-                ).padStart(2, "0")}`;
+                        <%= formatEuro(
+                            epargneDisponibleMois
+                        ) %>
 
+                    </strong>
 
-            // ====================================
-            // SOLDE TOTAL
-            // ====================================
+                    <small>
+                        Revenus du mois − dépenses du mois
+                    </small>
 
-            const total =
-                db.prepare(`
-                    SELECT
-                        COALESCE(
-                            SUM(
-                                CASE
+                </div>
 
-                                    WHEN type = 'revenu'
-                                    THEN montant_centimes
+            </div>
 
-                                    ELSE -montant_centimes
 
-                                END
-                            ),
-                            0
-                        ) AS solde
+            <!-- ERREUR -->
 
-                    FROM transactions
+            <% if (erreurObjectif) { %>
 
-                    WHERE utilisateur_id = ?
-                `).get(id);
+                <div
+                    class="bz-transaction-error"
+                    role="alert"
+                >
 
+                    <div class="bz-transaction-error-icon">
+                        !
+                    </div>
 
-            // ====================================
-            // REVENUS / DÉPENSES DU MOIS
-            // ====================================
 
-            const statistiques =
-                db.prepare(`
-                    SELECT
+                    <div class="bz-transaction-error-content">
 
-                        COALESCE(
-                            SUM(
-                                CASE
+                        <strong>
+                            Objectif non enregistré
+                        </strong>
 
-                                    WHEN type = 'revenu'
-                                    THEN montant_centimes
+                        <p>
+                            <%= erreurObjectif %>
+                        </p>
 
-                                    ELSE 0
+                    </div>
 
-                                END
-                            ),
-                            0
-                        ) AS revenus,
+                </div>
 
+            <% } %>
 
-                        COALESCE(
-                            SUM(
-                                CASE
 
-                                    WHEN type = 'depense'
-                                    THEN montant_centimes
+            <!-- SUCCÈS -->
 
-                                    ELSE 0
+            <% if (succesObjectif) { %>
 
-                                END
-                            ),
-                            0
-                        ) AS depenses
+                <div class="bz-saving-success">
 
-                    FROM transactions
+                    ✓ <%= succesObjectif %>
 
-                    WHERE utilisateur_id = ?
+                </div>
 
-                    AND substr(
-                        date_transaction,
-                        1,
-                        7
-                    ) = ?
-                `).get(
-                    id,
-                    moisActuel
-                );
+            <% } %>
 
 
-            // ====================================
-            // HISTORIQUE
-            // ====================================
+            <!-- =====================================
+                 OBJECTIFS EXISTANTS
+                 ===================================== -->
 
-            const transactions =
-                db.prepare(`
-                    SELECT
+            <% if (objectifsEpargne.length > 0) { %>
 
-                        id,
-                        type,
-                        montant_centimes,
-                        categorie,
-                        description,
-                        date_transaction
+                <div class="bz-saving-goals">
 
-                    FROM transactions
+                    <% objectifsEpargne.forEach(function(objectif) { %>
 
-                    WHERE utilisateur_id = ?
+                        <article class="bz-saving-card">
 
-                    ORDER BY
-                        date_transaction DESC,
-                        id DESC
 
-                    LIMIT 10
-                `).all(id);
+                            <!-- NOM -->
 
+                            <div class="bz-saving-card-top">
 
-            // ====================================
-            // GRAPHIQUE 6 DERNIERS MOIS
-            // ====================================
+                                <div class="bz-saving-icon">
+                                    ◎
+                                </div>
 
-            const requeteMois =
-                db.prepare(`
-                    SELECT
+                                <div>
 
-                        COALESCE(
-                            SUM(
-                                CASE
-                                    WHEN type = 'revenu'
-                                    THEN montant_centimes
-                                    ELSE 0
-                                END
-                            ),
-                            0
-                        ) AS revenus,
+                                    <small>
+                                        OBJECTIF
+                                    </small>
 
+                                    <h3>
+                                        <%= objectif.nom %>
+                                    </h3>
 
-                        COALESCE(
-                            SUM(
-                                CASE
-                                    WHEN type = 'depense'
-                                    THEN montant_centimes
-                                    ELSE 0
-                                END
-                            ),
-                            0
-                        ) AS depenses
+                                </div>
 
-                    FROM transactions
+                            </div>
 
-                    WHERE utilisateur_id = ?
 
-                    AND substr(
-                        date_transaction,
-                        1,
-                        7
-                    ) = ?
-                `);
+                            <!-- MONTANTS -->
 
+                            <div class="bz-saving-money">
 
-            const graphique = [];
+                                <strong>
 
+                                    <%= formatEuro(
+                                        objectif.montant_epargne_centimes
+                                    ) %>
 
-            for (
-                let i = 5;
-                i >= 0;
-                i--
-            ) {
+                                </strong>
 
-                const date =
-                    new Date(
-                        maintenant.getFullYear(),
-                        maintenant.getMonth() - i,
-                        1
-                    );
 
+                                <span>
 
-                const mois =
+                                    sur
 
-                    `${date.getFullYear()}-${String(
-                        date.getMonth() + 1
-                    ).padStart(2, "0")}`;
+                                    <%= formatEuro(
+                                        objectif.montant_cible_centimes
+                                    ) %>
 
+                                </span>
 
-                const valeurs =
-                    requeteMois.get(
-                        id,
-                        mois
-                    );
+                            </div>
 
 
-                graphique.push({
+                            <!-- =====================================
+                                 PROGRESSION
+                                 MÊME STYLE QUE LE BUDGET
+                                 ===================================== -->
 
-                    label:
-                        date.toLocaleDateString(
-                            "fr-FR",
-                            {
-                                month: "short"
-                            }
-                        ),
+                            <progress
+                                class="bz-budget-progress"
+                                max="100"
+                                value="<%= objectif.progression %>"
+                            ></progress>
 
-                    revenus:
-                        valeurs.revenus,
 
-                    depenses:
-                        valeurs.depenses
-                });
-            }
+                            <p class="bz-small">
 
+                                <%= objectif.progression %>%
+                                de l'objectif atteint
 
-            const maximumGraphique =
-                Math.max(
+                            </p>
 
-                    1,
 
-                    ...graphique.map(
-                        (m) =>
-                            Math.max(
-                                m.revenus,
-                                m.depenses
-                            )
-                    )
-                );
+                            <!-- OBJECTIF TERMINÉ -->
 
+                            <% if (objectif.termine) { %>
 
-            // ====================================
-            // RÉPARTITION DES DÉPENSES
-            // ====================================
+                                <div class="bz-saving-complete">
 
-            const categories =
-                db.prepare(`
-                    SELECT
+                                    ✓ Objectif atteint !
 
-                        categorie,
+                                </div>
 
-                        SUM(
-                            montant_centimes
-                        ) AS total
+                            <% } else { %>
 
-                    FROM transactions
 
-                    WHERE utilisateur_id = ?
+                                <!-- INFORMATIONS -->
 
-                    AND type = 'depense'
+                                <div class="bz-saving-info-grid">
 
-                    AND substr(
-                        date_transaction,
-                        1,
-                        7
-                    ) = ?
 
-                    GROUP BY categorie
+                                    <div>
 
-                    ORDER BY total DESC
-                `).all(
-                    id,
-                    moisActuel
-                );
+                                        <span>
+                                            Reste à épargner
+                                        </span>
 
+                                        <strong>
 
-            let progression = 0;
+                                            <%= formatEuro(
+                                                objectif.reste_centimes
+                                            ) %>
 
+                                        </strong>
 
-            const repartition =
-                categories.map(
-                    (c) => {
+                                    </div>
 
-                        const pourcentage =
-                            statistiques.depenses > 0
 
-                                ? (
-                                    c.total /
-                                    statistiques.depenses
-                                ) * 100
+                                    <div>
 
-                                : 0;
+                                        <span>
+                                            Mois restants
+                                        </span>
 
+                                        <strong>
+                                            <%= objectif.mois_restants %>
+                                        </strong>
 
-                        const segment = {
+                                    </div>
 
-                            ...c,
 
-                            pourcentage,
+                                    <div>
 
-                            decalage:
-                                progression
-                        };
+                                        <span>
+                                            Date limite
+                                        </span>
 
+                                        <strong>
+                                            <%= objectif.date_echeance %>
+                                        </strong>
 
-                        progression +=
-                            pourcentage;
+                                    </div>
 
 
-                        return segment;
-                    }
-                );
+                                    <div>
 
+                                        <span>
+                                            Recommandé / mois
+                                        </span>
 
-            // ====================================
-            // BUDGET
-            // ====================================
+                                        <strong class="bz-positive">
 
-            const budget =
-                db.prepare(`
-                    SELECT
-                        montant_limite_centimes
+                                            <%= formatEuro(
+                                                objectif
+                                                    .recommandation_mensuelle_centimes
+                                            ) %>
 
-                    FROM budgets
+                                        </strong>
 
-                    WHERE utilisateur_id = ?
+                                    </div>
 
-                    AND mois = ?
-                `).get(
-                    id,
-                    moisActuel
-                );
+                                </div>
 
 
-            const limite =
-                budget
-                    ? budget
-                        .montant_limite_centimes
-                    : 0;
+                                <!-- ÉPARGNE DÉTECTÉE -->
 
+                                <div class="bz-saving-auto-info">
 
-            const utilisation =
-                limite > 0
+                                    <span>
+                                        Épargne disponible détectée ce mois-ci
+                                    </span>
 
-                    ? Math.min(
-                        100,
+                                    <strong>
 
-                        Math.round(
-                            statistiques.depenses /
-                            limite *
-                            100
-                        )
-                    )
+                                        <%= formatEuro(
+                                            epargneDisponibleMois
+                                        ) %>
 
-                    : 0;
+                                    </strong>
 
+                                </div>
 
-            // ====================================
-            // FORMAT EUROS
-            // ====================================
+                            <% } %>
 
-            const formatEuro =
-                (centimes) =>
 
-                    new Intl.NumberFormat(
-                        "fr-FR",
-                        {
-                            style: "currency",
-                            currency: "EUR"
-                        }
-                    ).format(
-                        centimes / 100
-                    );
+                            <!-- SUPPRIMER OBJECTIF -->
 
+                            <form
+                                action="/objectifs-epargne/<%= objectif.id %>/supprimer"
+                                method="POST"
+                                class="bz-saving-delete-form"
+                            >
 
-            // ====================================
-            // RENDU DASHBOARD
-            // ====================================
+                                <input
+                                    type="hidden"
+                                    name="_csrf"
+                                    value="<%= csrfToken %>"
+                                >
 
-            res.render(
-                "dashboard",
-                {
 
-                    utilisateur,
+                                <button
+                                    type="submit"
+                                    class="bz-saving-delete"
+                                    onclick="return confirm('Supprimer cet objectif d’épargne ?');"
+                                >
 
-                    csrfToken:
-                        genererToken(req),
+                                    Supprimer l'objectif
 
-                    erreurTransaction,
+                                </button>
 
-                    ancienneTransaction,
+                            </form>
 
-                    solde:
-                        total.solde,
+                        </article>
 
-                    statistiques,
+                    <% }); %>
 
-                    transactions,
+                </div>
 
-                    graphique,
+            <% } %>
 
-                    maximumGraphique,
 
-                    repartition,
+            <!-- =====================================
+                 CRÉER UN OBJECTIF
+                 ===================================== -->
 
-                    limite,
+            <div class="bz-new-saving">
 
-                    utilisation,
 
-                    formatEuro,
+                <div class="bz-new-saving-heading">
 
-                    dateAujourdhui: [
+                    <div class="bz-saving-icon">
+                        +
+                    </div>
 
-                        maintenant
-                            .getFullYear(),
 
-                        String(
-                            maintenant
-                                .getMonth() + 1
-                        ).padStart(
-                            2,
-                            "0"
-                        ),
+                    <div>
 
-                        String(
-                            maintenant
-                                .getDate()
-                        ).padStart(
-                            2,
-                            "0"
-                        )
+                        <h2>
+                            Créer un nouvel objectif
+                        </h2>
 
-                    ].join("-")
-                }
-            );
+                        <p class="bz-muted">
 
-        } catch (error) {
+                            Le montant déjà épargné est calculé
+                            automatiquement par BudgetZen.
 
-            next(error);
-        }
-    }
-);
+                        </p>
 
+                    </div>
 
-// ========================================
-// 12. CONVERSION MONTANT
-// ========================================
+                </div>
 
-function convertirMontant(valeur) {
 
-    if (
-        typeof valeur !== "string"
-    ) {
+                <form
+                    action="/objectifs-epargne/ajouter"
+                    method="POST"
+                    class="bz-saving-form"
+                >
 
-        return null;
-    }
+                    <input
+                        type="hidden"
+                        name="_csrf"
+                        value="<%= csrfToken %>"
+                    >
 
 
-    const resultat =
+                    <!-- NOM -->
 
-        /^(\d{1,7})(?:[.,](\d{1,2}))?$/
-            .exec(
-                valeur.trim()
-            );
+                    <div class="bz-saving-field">
 
+                        <label for="objectif-nom">
+                            Nom de l'objectif
+                        </label>
 
-    if (!resultat) {
+                        <input
+                            type="text"
+                            id="objectif-nom"
+                            name="nom"
+                            minlength="2"
+                            maxlength="80"
+                            required
+                            placeholder="Ex : Voyage au Japon"
+                        >
 
-        return null;
-    }
+                    </div>
 
 
-    const euros =
-        Number(
-            resultat[1]
-        );
+                    <!-- MONTANT CIBLE -->
 
+                    <div class="bz-saving-field">
 
-    const centimes =
-        Number(
-            (
-                resultat[2] || ""
-            ).padEnd(
-                2,
-                "0"
-            )
-        );
+                        <label for="objectif-cible">
+                            Montant cible (€)
+                        </label>
 
+                        <input
+                            type="number"
+                            id="objectif-cible"
+                            name="montant_cible"
+                            min="0.01"
+                            max="1000000"
+                            step="0.01"
+                            required
+                            placeholder="Ex : 5000"
+                        >
 
-    const total =
-        euros * 100 +
-        centimes;
+                    </div>
 
 
-    return (
-        total > 0 &&
-        total <= 100000000
-    )
-        ? total
-        : null;
-}
+                    <!-- ÉPARGNE AUTOMATIQUE -->
 
+                    <div class="bz-saving-field">
 
-// ========================================
-// 13. AJOUTER UNE TRANSACTION
-// ========================================
+                        <label>
+                            Montant déjà épargné
+                        </label>
 
-app.post(
-    "/transactions/ajouter",
-    exigerConnexion,
-    verifierCsrf,
 
-    (req, res, next) => {
+                        <div class="bz-auto-saving-value">
 
-        try {
+                            <span>
+                                ◎
+                            </span>
 
-            const type =
-                req.body.type;
+                            <strong>
 
+                                <%= formatEuro(
+                                    epargneDisponibleMois
+                                ) %>
 
-            const montant =
-                convertirMontant(
-                    req.body.montant
-                );
+                            </strong>
 
+                        </div>
 
-            const categorie =
-                req.body.categorie;
+                    </div>
 
 
-            const description =
+                    <!-- DATE -->
 
-                typeof req.body
-                    .description === "string"
+                    <div class="bz-saving-field">
 
-                    ? req.body
-                        .description
-                        .trim()
+                        <label for="objectif-date">
+                            Date limite
+                        </label>
 
-                    : "";
+                        <input
+                            type="date"
+                            id="objectif-date"
+                            name="date_echeance"
+                            min="<%= dateAujourdhui %>"
+                            required
+                        >
 
+                    </div>
 
-            const date =
-                req.body.date;
 
+                    <button
+                        type="submit"
+                        class="bz-button bz-saving-submit"
+                    >
 
-            // Fonction retour avec message
-            function retourErreurTransaction(
-                message
-            ) {
+                        + Créer mon objectif
 
-                req.session
-                    .erreurTransaction =
-                    message;
+                    </button>
 
+                </form>
 
-                req.session
-                    .ancienneTransaction =
-                {
-                    type:
-                        typeof type === "string"
-                            ? type
-                            : "",
+            </div>
 
-                    montant:
-                        typeof req.body
-                            .montant === "string"
+        </section>
 
-                            ? req.body
-                                .montant
 
-                            : "",
+        <!-- =====================================
+             TRANSACTIONS + RÉPARTITION
+             ===================================== -->
 
-                    categorie:
-                        typeof categorie === "string"
-                            ? categorie
-                            : "",
+        <div class="bz-grid">
 
-                    description,
 
-                    date:
-                        typeof date === "string"
-                            ? date
-                            : ""
-                };
+            <!-- =====================================
+                 TRANSACTIONS
+                 ===================================== -->
 
+            <section
+                class="bz-panel"
+                id="transactions"
+            >
 
-                return req.session.save(
-                    (err) => {
+                <h2>
+                    Transactions récentes
+                </h2>
 
-                        if (err) {
+                <p class="bz-muted">
+                    Vos dix dernières opérations
+                </p>
 
-                            return next(err);
-                        }
 
+                <div class="bz-table-wrap">
 
-                        res.redirect(
-                            303,
-                            "/dashboard#ajout"
-                        );
-                    }
-                );
-            }
+                    <table class="bz-table">
 
+                        <thead>
 
-            const categoriesAutorisees =
-            [
-                "Salaire",
-                "Autres revenus",
-                "Alimentation",
-                "Logement",
-                "Transport",
-                "Loisirs",
-                "Santé",
-                "Études",
-                "Autres dépenses"
-            ];
+                            <tr>
 
+                                <th>
+                                    Transaction
+                                </th>
 
-            const dateValide =
+                                <th>
+                                    Date
+                                </th>
 
-                typeof date === "string" &&
+                                <th>
+                                    Montant
+                                </th>
 
-                /^\d{4}-\d{2}-\d{2}$/.test(
-                    date
-                ) &&
+                                <th>
+                                    Action
+                                </th>
 
-                !Number.isNaN(
-                    Date.parse(date)
-                ) &&
+                            </tr>
 
-                new Date(date)
-                    .toISOString()
-                    .slice(0, 10) ===
-                    date;
+                        </thead>
 
 
-            if (
-                ![
-                    "revenu",
-                    "depense"
-                ].includes(type) ||
+                        <tbody>
 
-                montant === null ||
 
-                !categoriesAutorisees
-                    .includes(
-                        categorie
-                    ) ||
+                            <% if (transactions.length === 0) { %>
 
-                description.length > 140 ||
+                                <tr>
 
-                !dateValide
-            ) {
+                                    <td colspan="4">
 
-                return retourErreurTransaction(
+                                        Aucune transaction
+                                        pour le moment.
 
-                    "Certaines informations sont invalides. " +
-                    "Vérifiez le montant, la catégorie et la date."
-                );
-            }
+                                    </td>
 
+                                </tr>
 
-            const estRevenu =
-                [
-                    "Salaire",
-                    "Autres revenus"
-                ].includes(
-                    categorie
-                );
+                            <% } %>
 
 
-            if (
-                (type === "revenu") !==
-                estRevenu
-            ) {
+                            <% transactions.forEach(function(t) { %>
 
-                return retourErreurTransaction(
+                                <tr>
 
-                    type === "revenu"
 
-                        ? "Pour un revenu, choisissez « Salaire » ou « Autres revenus »."
+                                    <td>
 
-                        : "Pour une dépense, choisissez une catégorie de dépense."
-                );
-            }
+                                        <strong>
+                                            <%= t.categorie %>
+                                        </strong>
 
+                                        <small>
+                                            <%= t.description || t.type %>
+                                        </small>
 
-            db.prepare(`
-                INSERT INTO transactions
-                (
-                    utilisateur_id,
-                    type,
-                    montant_centimes,
-                    categorie,
-                    description,
-                    date_transaction
-                )
+                                    </td>
 
-                VALUES (?, ?, ?, ?, ?, ?)
-            `).run(
 
-                req.session
-                    .utilisateurId,
+                                    <td>
+                                        <%= t.date_transaction %>
+                                    </td>
 
-                type,
 
-                montant,
+                                    <td
+                                        class="<%= t.type === 'revenu'
+                                            ? 'bz-positive'
+                                            : 'bz-negative'
+                                        %>"
+                                    >
 
-                categorie,
+                                        <%= t.type === "revenu"
+                                            ? "+"
+                                            : "-"
+                                        %>
 
-                description,
+                                        <%= formatEuro(
+                                            t.montant_centimes
+                                        ) %>
 
-                date
-            );
+                                    </td>
 
 
-            res.redirect(
-                303,
-                "/dashboard#transactions"
-            );
+                                    <td>
 
-        } catch (error) {
+                                        <form
+                                            method="POST"
+                                            action="/transactions/<%= t.id %>/supprimer"
+                                            class="bz-delete-form"
+                                        >
 
-            next(error);
-        }
-    }
-);
+                                            <input
+                                                type="hidden"
+                                                name="_csrf"
+                                                value="<%= csrfToken %>"
+                                            >
 
+                                            <button
+                                                type="submit"
+                                                class="bz-delete"
+                                                aria-label="Supprimer la transaction"
+                                                title="Supprimer cette transaction"
+                                            >
+                                                ✕
+                                            </button>
 
-// ========================================
-// 14. SUPPRIMER UNE TRANSACTION
-// ========================================
+                                        </form>
 
-app.post(
-    "/transactions/:id/supprimer",
-    exigerConnexion,
-    verifierCsrf,
+                                    </td>
 
-    (req, res, next) => {
+                                </tr>
 
-        try {
+                            <% }); %>
 
-            const id =
-                Number(
-                    req.params.id
-                );
+                        </tbody>
 
+                    </table>
 
-            if (
-                !Number.isSafeInteger(
-                    id
-                ) ||
-                id <= 0
-            ) {
+                </div>
 
-                return res
-                    .status(400)
-                    .send(
-                        "Identifiant invalide."
-                    );
-            }
+            </section>
 
 
-            db.prepare(`
-                DELETE FROM transactions
+            <!-- =====================================
+                 RÉPARTITION DES DÉPENSES
+                 ===================================== -->
 
-                WHERE id = ?
+            <section
+                class="bz-panel bz-repartition-panel"
+            >
 
-                AND utilisateur_id = ?
-            `).run(
+                <h2>
+                    Répartition des dépenses
+                </h2>
 
-                id,
+                <p class="bz-muted">
+                    Par catégorie, ce mois-ci
+                </p>
 
-                req.session
-                    .utilisateurId
-            );
 
+                <div class="bz-donut-wrap">
 
-            res.redirect(
-                303,
-                "/dashboard#transactions"
-            );
+                    <svg
+                        class="bz-donut"
+                        viewBox="0 0 150 150"
+                        role="img"
+                        aria-label="Répartition des dépenses"
+                    >
 
-        } catch (error) {
 
-            next(error);
-        }
-    }
-);
+                        <circle
+                            cx="75"
+                            cy="75"
+                            r="52"
+                            pathLength="100"
+                            class="bz-donut-track"
+                        />
 
 
-// ========================================
-// 15. ENREGISTRER LE BUDGET
-// ========================================
+                        <% repartition.forEach(function(c, i) { %>
 
-app.post(
-    "/budget/enregistrer",
-    exigerConnexion,
-    verifierCsrf,
+                            <circle
+                                cx="75"
+                                cy="75"
+                                r="52"
+                                pathLength="100"
+                                class="bz-donut-slice bz-slice-<%= i % 6 %>"
+                                stroke-dasharray="<%= c.pourcentage %> <%= 100 - c.pourcentage %>"
+                                stroke-dashoffset="<%= -c.decalage %>"
+                            />
 
-    (req, res, next) => {
+                        <% }); %>
 
-        try {
 
-            const montant =
-                convertirMontant(
-                    req.body.montant
-                );
+                        <text
+                            x="75"
+                            y="70"
+                            text-anchor="middle"
+                            class="bz-donut-caption"
+                        >
+                            Dépenses
+                        </text>
 
 
-            if (
-                montant === null
-            ) {
+                        <text
+                            x="75"
+                            y="86"
+                            text-anchor="middle"
+                            class="bz-donut-value"
+                        >
 
-                return res
-                    .status(400)
-                    .send(
-                        "Montant du budget invalide."
-                    );
-            }
+                            <%= formatEuro(
+                                statistiques.depenses
+                            ) %>
 
+                        </text>
 
-            const date =
-                new Date();
+                    </svg>
 
+                </div>
 
-            const mois =
 
-                `${date.getFullYear()}-${String(
-                    date.getMonth() + 1
-                ).padStart(2, "0")}`;
+                <div class="bz-category-list">
 
 
-            db.prepare(`
-                INSERT INTO budgets
-                (
-                    utilisateur_id,
-                    montant_limite_centimes,
-                    mois
-                )
+                    <% if (repartition.length === 0) { %>
 
-                VALUES (?, ?, ?)
+                        <p class="bz-muted">
 
-                ON CONFLICT(
-                    utilisateur_id,
-                    mois
-                )
+                            Aucune dépense enregistrée
+                            ce mois-ci.
 
-                DO UPDATE SET
+                        </p>
 
-                    montant_limite_centimes =
-                    excluded
-                        .montant_limite_centimes
-            `).run(
+                    <% } %>
 
-                req.session
-                    .utilisateurId,
 
-                montant,
+                    <% repartition.forEach(function(c, i) { %>
 
-                mois
-            );
+                        <div class="bz-category-item">
 
+                            <span>
 
-            res.redirect(
-                303,
-                "/dashboard#budget"
-            );
+                                <i
+                                    class="bz-category-dot bz-slice-<%= i % 6 %>"
+                                ></i>
 
-        } catch (error) {
+                                <%= c.categorie %>
 
-            next(error);
-        }
-    }
-);
+                            </span>
 
 
-// ========================================
-// 16. DÉCONNEXION
-// ========================================
+                            <strong>
 
-app.post(
-    "/deconnexion",
-    exigerConnexion,
-    verifierCsrf,
+                                <%= formatEuro(
+                                    c.total
+                                ) %>
 
-    (req, res, next) => {
+                            </strong>
 
-        req.session.destroy(
-            (err) => {
+                        </div>
 
-                if (err) {
+                    <% }); %>
 
-                    return next(err);
-                }
+                </div>
 
+            </section>
 
-                res.clearCookie(
-                    SESSION_COOKIE_NAME,
-                    {
-                        httpOnly: true,
-                        sameSite: "lax",
-                        secure:
-                            isProduction,
-                        path: "/"
-                    }
-                );
+        </div>
 
 
-                res.redirect(
-                    "/connexion"
-                );
-            }
-        );
-    }
-);
+        <!-- =====================================
+             NOUVELLE TRANSACTION
+             ===================================== -->
 
+        <section
+            class="bz-panel bz-add-panel"
+            id="ajout"
+        >
 
-// ========================================
-// 17. PAGE 404
-// ========================================
+            <h2>
+                Nouvelle transaction
+            </h2>
 
-app.use(
-    (req, res) => {
+            <p class="bz-muted">
+                Ajoutez un revenu ou une dépense.
+            </p>
 
-        res
-            .status(404)
-            .render("404");
-    }
-);
 
+            <% if (erreurTransaction) { %>
 
-// ========================================
-// 18. GESTION GLOBALE DES ERREURS
-// ========================================
+                <div
+                    class="bz-transaction-error"
+                    role="alert"
+                >
 
-app.use(
-    (err, req, res, next) => {
+                    <div class="bz-transaction-error-icon">
+                        !
+                    </div>
 
-        console.error(
-            "Erreur interne :",
-            err
-        );
 
+                    <div class="bz-transaction-error-content">
 
-        if (
-            res.headersSent
-        ) {
+                        <strong>
+                            Transaction non enregistrée
+                        </strong>
 
-            return next(err);
-        }
+                        <p>
+                            <%= erreurTransaction %>
+                        </p>
 
+                    </div>
 
-        res
-            .status(500)
-            .render("500");
-    }
-);
+                </div>
 
+            <% } %>
 
-// ========================================
-// 19. DÉMARRAGE DU SERVEUR
-// ========================================
 
-const PORT =
-    Number(
-        process.env.PORT ||
-        3000
-    );
+            <form
+                action="/transactions/ajouter"
+                method="POST"
+                class="bz-transaction-form"
+            >
 
+                <input
+                    type="hidden"
+                    name="_csrf"
+                    value="<%= csrfToken %>"
+                >
 
-if (
-    !Number.isInteger(PORT) ||
-    PORT < 1 ||
-    PORT > 65535
-) {
 
-    throw new Error(
-        "PORT invalide dans les variables d'environnement."
-    );
-}
+                <!-- TYPE -->
 
+                <div>
 
-app.listen(
-    PORT,
-    () => {
+                    <label for="type">
+                        Type
+                    </label>
 
-        console.log(
-            `Serveur lancé sur http://localhost:${PORT}`
-        );
-    }
-);
+
+                    <select
+                        id="type"
+                        name="type"
+                        required
+                    >
+
+                        <option
+                            value="depense"
+                            <%= ancienneTransaction?.type === "depense"
+                                ? "selected"
+                                : ""
+                            %>
+                        >
+                            Dépense
+                        </option>
+
+
+                        <option
+                            value="revenu"
+                            <%= ancienneTransaction?.type === "revenu"
+                                ? "selected"
+                                : ""
+                            %>
+                        >
+                            Revenu
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <!-- MONTANT -->
+
+                <div>
+
+                    <label for="montant">
+                        Montant (€)
+                    </label>
+
+                    <input
+                        type="number"
+                        id="montant"
+                        name="montant"
+                        min="0.01"
+                        max="1000000"
+                        step="0.01"
+                        required
+                        placeholder="Ex : 50"
+                        value="<%= ancienneTransaction?.montant || '' %>"
+                    >
+
+                </div>
+
+
+                <!-- CATÉGORIE -->
+
+                <div>
+
+                    <label for="categorie">
+                        Catégorie
+                    </label>
+
+
+                    <select
+                        id="categorie"
+                        name="categorie"
+                        required
+                    >
+
+                        <option value="">
+                            Choisir une catégorie
+                        </option>
+
+
+                        <optgroup label="Dépenses">
+
+
+                            <option
+                                value="Alimentation"
+                                <%= ancienneTransaction?.categorie === "Alimentation"
+                                    ? "selected"
+                                    : ""
+                                %>
+                            >
+                                Alimentation
+                            </option>
+
+
+                            <option
+                                value="Logement"
+                                <%= ancienneTransaction?.categorie === "Logement"
+                                    ? "selected"
+                                    : ""
+                                %>
+                            >
+                                Logement
+                            </option>
+
+
+                            <option
+                                value="Transport"
+                                <%= ancienneTransaction?.categorie === "Transport"
+                                    ? "selected"
+                                    : ""
+                                %>
+                            >
+                                Transport
+                            </option>
+
+
+                            <option
+                                value="Loisirs"
+                                <%= ancienneTransaction?.categorie === "Loisirs"
+                                    ? "selected"
+                                    : ""
+                                %>
+                            >
+                                Loisirs
+                            </option>
+
+
+                            <option
+                                value="Santé"
+                                <%= ancienneTransaction?.categorie === "Santé"
+                                    ? "selected"
+                                    : ""
+                                %>
+                            >
+                                Santé
+                            </option>
+
+
+                            <option
+                                value="Études"
+                                <%= ancienneTransaction?.categorie === "Études"
+                                    ? "selected"
+                                    : ""
+                                %>
+                            >
+                                Études
+                            </option>
+
+
+                            <option
+                                value="Autres dépenses"
+                                <%= ancienneTransaction?.categorie === "Autres dépenses"
+                                    ? "selected"
+                                    : ""
+                                %>
+                            >
+                                Autres dépenses
+                            </option>
+
+
+                        </optgroup>
+
+
+                        <optgroup label="Revenus">
+
+
+                            <option
+                                value="Salaire"
+                                <%= ancienneTransaction?.categorie === "Salaire"
+                                    ? "selected"
+                                    : ""
+                                %>
+                            >
+                                Salaire
+                            </option>
+
+
+                            <option
+                                value="Autres revenus"
+                                <%= ancienneTransaction?.categorie === "Autres revenus"
+                                    ? "selected"
+                                    : ""
+                                %>
+                            >
+                                Autres revenus
+                            </option>
+
+
+                        </optgroup>
+
+                    </select>
+
+                </div>
+
+
+                <!-- DATE -->
+
+                <div>
+
+                    <label for="date">
+                        Date
+                    </label>
+
+                    <input
+                        type="date"
+                        id="date"
+                        name="date"
+                        value="<%= ancienneTransaction?.date || dateAujourdhui %>"
+                        required
+                    >
+
+                </div>
+
+
+                <!-- DESCRIPTION -->
+
+                <div class="bz-description-field">
+
+                    <label for="description">
+                        Description
+                    </label>
+
+                    <input
+                        type="text"
+                        id="description"
+                        name="description"
+                        maxlength="140"
+                        placeholder="Ex : Courses au supermarché"
+                        value="<%= ancienneTransaction?.description || '' %>"
+                    >
+
+                </div>
+
+
+                <button
+                    type="submit"
+                    class="bz-button"
+                >
+                    + Enregistrer la transaction
+                </button>
+
+            </form>
+
+        </section>
+
+
+    </main>
+
+</div>
+
+
+<!-- =====================================
+     MODALE SUPPRESSION TRANSACTION
+     ===================================== -->
+
+<div
+    id="deleteModal"
+    class="bz-delete-modal-overlay"
+    aria-hidden="true"
+>
+
+    <div
+        class="bz-delete-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="deleteModalTitle"
+    >
+
+        <div class="bz-delete-modal-icon">
+            !
+        </div>
+
+
+        <h2 id="deleteModalTitle">
+            Supprimer cette transaction ?
+        </h2>
+
+
+        <p>
+
+            Cette transaction sera supprimée définitivement.
+
+            <br>
+
+            Cette action est irréversible.
+
+        </p>
+
+
+        <div class="bz-delete-modal-actions">
+
+            <button
+                type="button"
+                id="cancelDelete"
+                class="bz-delete-modal-cancel"
+            >
+                Annuler
+            </button>
+
+
+            <button
+                type="button"
+                id="confirmDelete"
+                class="bz-delete-modal-confirm"
+            >
+                Supprimer
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script
+    src="/confirm-delete.js"
+    defer
+></script>
+
+
+</body>
+
+</html>

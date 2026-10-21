@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="fr">
 
 <head>
@@ -11,7 +10,9 @@
         content="width=device-width, initial-scale=1.0"
     >
 
-    <title>Dashboard - BudgetZen</title>
+    <title>
+        Dashboard - BudgetZen
+    </title>
 
     <link
         rel="stylesheet"
@@ -23,16 +24,14 @@
 
 <body class="bz-body">
 
-
 <div class="bz-app">
 
 
     <!-- =====================================
-         MENU LATÉRAL
+         SIDEBAR
          ===================================== -->
 
     <aside class="bz-sidebar">
-
 
         <div class="bz-logo">
             ◈ BudgetZen
@@ -62,6 +61,11 @@
             </a>
 
 
+            <a href="#epargne">
+                ◎ Objectifs d'épargne
+            </a>
+
+
             <a href="#transactions">
                 ⇄ Transactions
             </a>
@@ -80,7 +84,12 @@
             <div class="bz-profile">
 
                 <span class="bz-avatar">
-                    <%= utilisateur.nom.charAt(0).toUpperCase() %>
+
+                    <%= utilisateur.nom
+                        .charAt(0)
+                        .toUpperCase()
+                    %>
+
                 </span>
 
 
@@ -99,8 +108,6 @@
             </div>
 
 
-            <!-- DÉCONNEXION -->
-
             <form
                 action="/deconnexion"
                 method="POST"
@@ -112,6 +119,7 @@
                     value="<%= csrfToken %>"
                 >
 
+
                 <button
                     class="bz-logout"
                     type="submit"
@@ -121,12 +129,9 @@
 
             </form>
 
-
         </div>
 
-
     </aside>
-
 
 
     <!-- =====================================
@@ -139,9 +144,7 @@
     >
 
 
-        <!-- =====================================
-             HEADER
-             ===================================== -->
+        <!-- HEADER -->
 
         <header class="bz-header">
 
@@ -151,9 +154,11 @@
                     MON ESPACE FINANCIER
                 </p>
 
+
                 <h1>
                     Bonjour, <%= utilisateur.nom %> 👋
                 </h1>
+
 
                 <p class="bz-muted">
                     Voici un aperçu de votre situation financière.
@@ -162,7 +167,6 @@
             </div>
 
         </header>
-
 
 
         <!-- =====================================
@@ -198,7 +202,6 @@
             </article>
 
 
-
             <!-- REVENUS -->
 
             <article class="bz-stat">
@@ -212,7 +215,11 @@
                 </p>
 
                 <h2 class="bz-positive">
-                    <%= formatEuro(statistiques.revenus) %>
+
+                    <%= formatEuro(
+                        statistiques.revenus
+                    ) %>
+
                 </h2>
 
                 <small>
@@ -220,7 +227,6 @@
                 </small>
 
             </article>
-
 
 
             <!-- DÉPENSES -->
@@ -236,7 +242,11 @@
                 </p>
 
                 <h2 class="bz-negative">
-                    <%= formatEuro(statistiques.depenses) %>
+
+                    <%= formatEuro(
+                        statistiques.depenses
+                    ) %>
+
                 </h2>
 
                 <small>
@@ -244,7 +254,6 @@
                 </small>
 
             </article>
-
 
 
             <!-- ÉPARGNE -->
@@ -259,11 +268,12 @@
                     Épargne du mois
                 </p>
 
-                <h2>
+                <h2 class="bz-positive">
+
                     <%= formatEuro(
-                        statistiques.revenus -
-                        statistiques.depenses
+                        epargneDisponibleMois
                     ) %>
+
                 </h2>
 
                 <small>
@@ -272,20 +282,17 @@
 
             </article>
 
-
         </section>
 
 
-
         <!-- =====================================
-             LIGNE 1
              STATISTIQUES + BUDGET
              ===================================== -->
 
         <div class="bz-grid">
 
 
-            <!-- ÉVOLUTION FINANCIÈRE -->
+            <!-- ÉVOLUTION -->
 
             <section
                 class="bz-panel"
@@ -312,13 +319,20 @@
                 <div class="bz-legend">
 
                     <span>
+
                         <i class="bz-dot-income"></i>
+
                         Revenus
+
                     </span>
 
+
                     <span>
+
                         <i class="bz-dot-expense"></i>
+
                         Dépenses
+
                     </span>
 
                 </div>
@@ -334,6 +348,7 @@
                                 <%= m.label %>
                             </span>
 
+
                             <div class="bz-chart-bars">
 
                                 <progress
@@ -341,6 +356,7 @@
                                     max="<%= maximumGraphique %>"
                                     value="<%= m.revenus %>"
                                 ></progress>
+
 
                                 <progress
                                     class="bz-progress-expense"
@@ -356,9 +372,7 @@
 
                 </div>
 
-
             </section>
-
 
 
             <!-- =====================================
@@ -374,13 +388,18 @@
                     Mon budget mensuel
                 </h2>
 
+
                 <p class="bz-muted">
                     Gardez le contrôle de vos dépenses.
                 </p>
 
 
                 <div class="bz-budget-number">
-                    <%= formatEuro(statistiques.depenses) %>
+
+                    <%= formatEuro(
+                        statistiques.depenses
+                    ) %>
+
                 </div>
 
 
@@ -411,8 +430,6 @@
                 </p>
 
 
-                <!-- FORMULAIRE BUDGET -->
-
                 <form
                     action="/budget/enregistrer"
                     method="POST"
@@ -439,7 +456,7 @@
                         max="1000000"
                         step="0.01"
                         required
-                        placeholder="Ex : 800"
+                        placeholder="Ex : 900"
                         value="<%= limite > 0
                             ? (limite / 100).toFixed(2)
                             : ''
@@ -459,19 +476,593 @@
 
                     </button>
 
-
                 </form>
 
-
             </section>
-
 
         </div>
 
 
+        <!-- =====================================
+             OBJECTIFS D'ÉPARGNE
+             ===================================== -->
+
+        <section
+            class="bz-panel bz-savings-section"
+            id="epargne"
+        >
+
+
+            <div class="bz-savings-header">
+
+                <div>
+
+                    <p class="bz-eyebrow">
+                        ÉPARGNE INTELLIGENTE
+                    </p>
+
+
+                    <h2>
+                        ◎ Mes objectifs d'épargne
+                    </h2>
+
+
+                    <p class="bz-muted">
+
+                        BudgetZen détecte automatiquement
+                        votre épargne du mois à partir
+                        de vos revenus et de vos dépenses.
+
+                    </p>
+
+                </div>
+
+
+                <div class="bz-savings-detected">
+
+                    <span>
+                        Épargne détectée ce mois-ci
+                    </span>
+
+
+                    <strong>
+
+                        <%= formatEuro(
+                            epargneDisponibleMois
+                        ) %>
+
+                    </strong>
+
+
+                    <small>
+                        Revenus du mois − dépenses du mois
+                    </small>
+
+                </div>
+
+            </div>
+
+
+            <!-- ERREUR -->
+
+            <% if (erreurObjectif) { %>
+
+                <div
+                    class="bz-transaction-error"
+                    role="alert"
+                >
+
+                    <div class="bz-transaction-error-icon">
+                        !
+                    </div>
+
+
+                    <div class="bz-transaction-error-content">
+
+                        <strong>
+                            Objectif non enregistré
+                        </strong>
+
+                        <p>
+                            <%= erreurObjectif %>
+                        </p>
+
+                    </div>
+
+                </div>
+
+            <% } %>
+
+
+            <!-- SUCCÈS -->
+
+            <% if (succesObjectif) { %>
+
+                <div class="bz-saving-success">
+
+                    ✓ <%= succesObjectif %>
+
+                </div>
+
+            <% } %>
+
+
+            <!-- =====================================
+                 LISTE DES OBJECTIFS
+                 ===================================== -->
+
+            <% if (objectifsEpargne.length === 0) { %>
+
+                <p class="bz-muted">
+                    Aucun objectif d'épargne pour le moment.
+                </p>
+
+            <% } %>
+
+
+            <% if (objectifsEpargne.length > 0) { %>
+
+                <div class="bz-saving-goals">
+
+
+                    <% objectifsEpargne.forEach(function(objectif) { %>
+
+
+                        <%
+                            /*
+                                CALCUL DIRECT DANS LE DASHBOARD
+
+                                Exemple :
+                                épargne = 2020 €
+                                objectif = 5000 €
+
+                                progression ≈ 40 %
+                            */
+
+                            const epargneObjectif =
+                                Math.min(
+                                    epargneDisponibleMois,
+                                    objectif.montant_cible_centimes
+                                );
+
+
+                            const progressionObjectif =
+                                objectif.montant_cible_centimes > 0
+
+                                    ? Math.min(
+                                        100,
+
+                                        Math.round(
+                                            (
+                                                epargneObjectif /
+                                                objectif.montant_cible_centimes
+                                            ) * 100
+                                        )
+                                    )
+
+                                    : 0;
+
+
+                            const resteObjectif =
+                                Math.max(
+                                    0,
+
+                                    objectif.montant_cible_centimes -
+                                    epargneObjectif
+                                );
+
+
+                            const recommandationObjectif =
+                                resteObjectif === 0
+
+                                    ? 0
+
+                                    : objectif.mois_restants > 0
+
+                                        ? Math.ceil(
+                                            resteObjectif /
+                                            objectif.mois_restants
+                                        )
+
+                                        : resteObjectif;
+
+
+                            const objectifTermine =
+                                resteObjectif === 0;
+                        %>
+
+
+                        <article class="bz-saving-card">
+
+
+                            <!-- NOM -->
+
+                            <div class="bz-saving-card-top">
+
+                                <div class="bz-saving-icon">
+                                    ◎
+                                </div>
+
+
+                                <div>
+
+                                    <small>
+                                        OBJECTIF
+                                    </small>
+
+                                    <h3>
+                                        <%= objectif.nom %>
+                                    </h3>
+
+                                </div>
+
+                            </div>
+
+
+                            <!-- =====================================
+                                 MONTANT ÉPARGNÉ
+                                 ===================================== -->
+
+                            <div class="bz-saving-money">
+
+                                <strong>
+
+                                    <%= formatEuro(
+                                        epargneObjectif
+                                    ) %>
+
+                                </strong>
+
+
+                                <span>
+
+                                    sur
+
+                                    <%= formatEuro(
+                                        objectif.montant_cible_centimes
+                                    ) %>
+
+                                </span>
+
+                            </div>
+
+
+                            <!-- =====================================
+                                 BARRE DE PROGRESSION
+                                 MÊME STYLE QUE LE BUDGET
+                                 ===================================== -->
+
+                            <progress
+                                class="bz-budget-progress"
+                                max="100"
+                                value="<%= progressionObjectif %>"
+                            ></progress>
+
+
+                            <p class="bz-small">
+
+                                <%= progressionObjectif %>%
+                                de l'objectif atteint
+
+                            </p>
+
+
+                            <!-- =====================================
+                                 OBJECTIF TERMINÉ
+                                 ===================================== -->
+
+                            <% if (objectifTermine) { %>
+
+                                <div class="bz-saving-complete">
+
+                                    ✓ Objectif atteint !
+
+                                </div>
+
+                            <% } else { %>
+
+
+                                <!-- INFORMATIONS -->
+
+                                <div class="bz-saving-info-grid">
+
+
+                                    <!-- RESTE -->
+
+                                    <div>
+
+                                        <span>
+                                            Reste à épargner
+                                        </span>
+
+
+                                        <strong>
+
+                                            <%= formatEuro(
+                                                resteObjectif
+                                            ) %>
+
+                                        </strong>
+
+                                    </div>
+
+
+                                    <!-- MOIS -->
+
+                                    <div>
+
+                                        <span>
+                                            Mois restants
+                                        </span>
+
+
+                                        <strong>
+
+                                            <%= objectif.mois_restants %>
+
+                                        </strong>
+
+                                    </div>
+
+
+                                    <!-- DATE -->
+
+                                    <div>
+
+                                        <span>
+                                            Date limite
+                                        </span>
+
+
+                                        <strong>
+
+                                            <%= objectif.date_echeance %>
+
+                                        </strong>
+
+                                    </div>
+
+
+                                    <!-- RECOMMANDATION -->
+
+                                    <div>
+
+                                        <span>
+                                            Recommandé / mois
+                                        </span>
+
+
+                                        <strong class="bz-positive">
+
+                                            <%= formatEuro(
+                                                recommandationObjectif
+                                            ) %>
+
+                                        </strong>
+
+                                    </div>
+
+                                </div>
+
+
+                                <!-- ÉPARGNE DÉTECTÉE -->
+
+                                <div class="bz-saving-auto-info">
+
+                                    <span>
+                                        Épargne disponible détectée ce mois-ci
+                                    </span>
+
+
+                                    <strong>
+
+                                        <%= formatEuro(
+                                            epargneObjectif
+                                        ) %>
+
+                                    </strong>
+
+                                </div>
+
+                            <% } %>
+
+
+                            <!-- =====================================
+                                 SUPPRESSION
+                                 ===================================== -->
+
+                            <form
+                                action="/objectifs-epargne/<%= objectif.id %>/supprimer"
+                                method="POST"
+                                class="bz-saving-delete-form"
+                            >
+
+                                <input
+                                    type="hidden"
+                                    name="_csrf"
+                                    value="<%= csrfToken %>"
+                                >
+
+
+                                <button
+                                    type="submit"
+                                    class="bz-saving-delete"
+                                    onclick="return confirm('Supprimer cet objectif d’épargne ?');"
+                                >
+
+                                    Supprimer l'objectif
+
+                                </button>
+
+                            </form>
+
+                        </article>
+
+                    <% }); %>
+
+                </div>
+
+            <% } %>
+
+
+            <!-- =====================================
+                 CRÉER UN OBJECTIF
+                 ===================================== -->
+
+            <div class="bz-new-saving">
+
+
+                <div class="bz-new-saving-heading">
+
+                    <div class="bz-saving-icon">
+                        +
+                    </div>
+
+
+                    <div>
+
+                        <h2>
+                            Créer un nouvel objectif
+                        </h2>
+
+
+                        <p class="bz-muted">
+
+                            BudgetZen utilise automatiquement
+                            votre épargne disponible pour
+                            calculer votre progression.
+
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <form
+                    action="/objectifs-epargne/ajouter"
+                    method="POST"
+                    class="bz-saving-form"
+                >
+
+                    <input
+                        type="hidden"
+                        name="_csrf"
+                        value="<%= csrfToken %>"
+                    >
+
+
+                    <!-- NOM -->
+
+                    <div class="bz-saving-field">
+
+                        <label for="objectif-nom">
+                            Nom de l'objectif
+                        </label>
+
+
+                        <input
+                            type="text"
+                            id="objectif-nom"
+                            name="nom"
+                            minlength="2"
+                            maxlength="80"
+                            required
+                            placeholder="Ex : École"
+                        >
+
+                    </div>
+
+
+                    <!-- MONTANT CIBLE -->
+
+                    <div class="bz-saving-field">
+
+                        <label for="objectif-cible">
+                            Montant cible (€)
+                        </label>
+
+
+                        <input
+                            type="number"
+                            id="objectif-cible"
+                            name="montant_cible"
+                            min="0.01"
+                            max="1000000"
+                            step="0.01"
+                            required
+                            placeholder="Ex : 5000"
+                        >
+
+                    </div>
+
+
+                    <!-- ÉPARGNE DÉTECTÉE -->
+
+                    <div class="bz-saving-field">
+
+                        <label>
+                            Épargne détectée automatiquement
+                        </label>
+
+
+                        <div class="bz-auto-saving-value">
+
+                            <span>
+                                ◎
+                            </span>
+
+
+                            <strong>
+
+                                <%= formatEuro(
+                                    epargneDisponibleMois
+                                ) %>
+
+                            </strong>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- DATE -->
+
+                    <div class="bz-saving-field">
+
+                        <label for="objectif-date">
+                            Date limite
+                        </label>
+
+
+                        <input
+                            type="date"
+                            id="objectif-date"
+                            name="date_echeance"
+                            min="<%= dateAujourdhui %>"
+                            required
+                        >
+
+                    </div>
+
+
+                    <button
+                        type="submit"
+                        class="bz-button bz-saving-submit"
+                    >
+
+                        + Créer mon objectif
+
+                    </button>
+
+                </form>
+
+            </div>
+
+        </section>
+
 
         <!-- =====================================
-             LIGNE 2
              TRANSACTIONS + RÉPARTITION
              ===================================== -->
 
@@ -491,6 +1082,7 @@
                     Transactions récentes
                 </h2>
 
+
                 <p class="bz-muted">
                     Vos dix dernières opérations
                 </p>
@@ -498,9 +1090,7 @@
 
                 <div class="bz-table-wrap">
 
-
                     <table class="bz-table">
-
 
                         <thead>
 
@@ -535,7 +1125,10 @@
                                 <tr>
 
                                     <td colspan="4">
-                                        Aucune transaction pour le moment.
+
+                                        Aucune transaction
+                                        pour le moment.
+
                                     </td>
 
                                 </tr>
@@ -554,6 +1147,7 @@
                                             <%= t.categorie %>
                                         </strong>
 
+
                                         <small>
                                             <%= t.description || t.type %>
                                         </small>
@@ -562,7 +1156,9 @@
 
 
                                     <td>
+
                                         <%= t.date_transaction %>
+
                                     </td>
 
 
@@ -573,10 +1169,11 @@
                                         %>"
                                     >
 
-                                        <%= t.type === 'revenu'
-                                            ? '+'
-                                            : '-'
+                                        <%= t.type === "revenu"
+                                            ? "+"
+                                            : "-"
                                         %>
+
 
                                         <%= formatEuro(
                                             t.montant_centimes
@@ -599,6 +1196,7 @@
                                                 value="<%= csrfToken %>"
                                             >
 
+
                                             <button
                                                 type="submit"
                                                 class="bz-delete"
@@ -612,35 +1210,31 @@
 
                                     </td>
 
-
                                 </tr>
 
                             <% }); %>
 
-
                         </tbody>
-
 
                     </table>
 
-
                 </div>
 
-
             </section>
-
 
 
             <!-- =====================================
                  RÉPARTITION DES DÉPENSES
                  ===================================== -->
 
-            <section class="bz-panel bz-repartition-panel">
-
+            <section
+                class="bz-panel bz-repartition-panel"
+            >
 
                 <h2>
                     Répartition des dépenses
                 </h2>
+
 
                 <p class="bz-muted">
                     Par catégorie, ce mois-ci
@@ -648,7 +1242,6 @@
 
 
                 <div class="bz-donut-wrap">
-
 
                     <svg
                         class="bz-donut"
@@ -698,14 +1291,14 @@
                             text-anchor="middle"
                             class="bz-donut-value"
                         >
+
                             <%= formatEuro(
                                 statistiques.depenses
                             ) %>
+
                         </text>
 
-
                     </svg>
-
 
                 </div>
 
@@ -716,7 +1309,10 @@
                     <% if (repartition.length === 0) { %>
 
                         <p class="bz-muted">
-                            Aucune dépense enregistrée ce mois-ci.
+
+                            Aucune dépense enregistrée
+                            ce mois-ci.
+
                         </p>
 
                     <% } %>
@@ -725,7 +1321,6 @@
                     <% repartition.forEach(function(c, i) { %>
 
                         <div class="bz-category-item">
-
 
                             <span>
 
@@ -739,23 +1334,22 @@
 
 
                             <strong>
-                                <%= formatEuro(c.total) %>
-                            </strong>
 
+                                <%= formatEuro(
+                                    c.total
+                                ) %>
+
+                            </strong>
 
                         </div>
 
                     <% }); %>
 
-
                 </div>
-
 
             </section>
 
-
         </div>
-
 
 
         <!-- =====================================
@@ -767,18 +1361,15 @@
             id="ajout"
         >
 
-
             <h2>
                 Nouvelle transaction
             </h2>
+
 
             <p class="bz-muted">
                 Ajoutez un revenu ou une dépense.
             </p>
 
-
-
-            <!-- MESSAGE D'ERREUR -->
 
             <% if (erreurTransaction) { %>
 
@@ -798,22 +1389,17 @@
                             Transaction non enregistrée
                         </strong>
 
+
                         <p>
                             <%= erreurTransaction %>
                         </p>
 
                     </div>
 
-
                 </div>
 
             <% } %>
 
-
-
-            <!-- =====================================
-                 FORMULAIRE TRANSACTION
-                 ===================================== -->
 
             <form
                 action="/transactions/ajouter"
@@ -821,13 +1407,11 @@
                 class="bz-transaction-form"
             >
 
-
                 <input
                     type="hidden"
                     name="_csrf"
                     value="<%= csrfToken %>"
                 >
-
 
 
                 <!-- TYPE -->
@@ -866,11 +1450,9 @@
                             Revenu
                         </option>
 
-
                     </select>
 
                 </div>
-
 
 
                 <!-- MONTANT -->
@@ -897,10 +1479,7 @@
                 </div>
 
 
-
-                <!-- =====================================
-                     CATÉGORIE
-                     ===================================== -->
+                <!-- CATÉGORIE -->
 
                 <div>
 
@@ -920,14 +1499,11 @@
                         </option>
 
 
-                        <!-- DÉPENSES -->
-
                         <optgroup label="Dépenses">
 
 
                             <option
                                 value="Alimentation"
-                                data-type="depense"
                                 <%= ancienneTransaction?.categorie === "Alimentation"
                                     ? "selected"
                                     : ""
@@ -939,7 +1515,6 @@
 
                             <option
                                 value="Logement"
-                                data-type="depense"
                                 <%= ancienneTransaction?.categorie === "Logement"
                                     ? "selected"
                                     : ""
@@ -951,7 +1526,6 @@
 
                             <option
                                 value="Transport"
-                                data-type="depense"
                                 <%= ancienneTransaction?.categorie === "Transport"
                                     ? "selected"
                                     : ""
@@ -963,7 +1537,6 @@
 
                             <option
                                 value="Loisirs"
-                                data-type="depense"
                                 <%= ancienneTransaction?.categorie === "Loisirs"
                                     ? "selected"
                                     : ""
@@ -975,7 +1548,6 @@
 
                             <option
                                 value="Santé"
-                                data-type="depense"
                                 <%= ancienneTransaction?.categorie === "Santé"
                                     ? "selected"
                                     : ""
@@ -987,7 +1559,6 @@
 
                             <option
                                 value="Études"
-                                data-type="depense"
                                 <%= ancienneTransaction?.categorie === "Études"
                                     ? "selected"
                                     : ""
@@ -999,7 +1570,6 @@
 
                             <option
                                 value="Autres dépenses"
-                                data-type="depense"
                                 <%= ancienneTransaction?.categorie === "Autres dépenses"
                                     ? "selected"
                                     : ""
@@ -1008,19 +1578,14 @@
                                 Autres dépenses
                             </option>
 
-
                         </optgroup>
 
-
-
-                        <!-- REVENUS -->
 
                         <optgroup label="Revenus">
 
 
                             <option
                                 value="Salaire"
-                                data-type="revenu"
                                 <%= ancienneTransaction?.categorie === "Salaire"
                                     ? "selected"
                                     : ""
@@ -1032,7 +1597,6 @@
 
                             <option
                                 value="Autres revenus"
-                                data-type="revenu"
                                 <%= ancienneTransaction?.categorie === "Autres revenus"
                                     ? "selected"
                                     : ""
@@ -1041,58 +1605,11 @@
                                 Autres revenus
                             </option>
 
-
                         </optgroup>
-
-
-
-                        <!-- CATÉGORIE PERSONNALISÉE -->
-
-                        <option
-                            value="personnalisee"
-                            data-type="personnalisee"
-                            <%= ancienneTransaction?.categorie === "personnalisee"
-                                ? "selected"
-                                : ""
-                            %>
-                        >
-                            ✎ Autre catégorie...
-                        </option>
-
 
                     </select>
 
-
                 </div>
-
-
-
-                <!-- =====================================
-                     CATÉGORIE PERSONNALISÉE
-                     ===================================== -->
-
-                <div
-                    id="categorie-personnalisee-bloc"
-                    hidden
-                >
-
-                    <label for="categorie-personnalisee">
-                        Ma catégorie
-                    </label>
-
-
-                    <input
-                        type="text"
-                        id="categorie-personnalisee"
-                        name="categorie_personnalisee"
-                        maxlength="40"
-                        placeholder="Ex : Abonnement, Vacances, Prime..."
-                        value="<%= ancienneTransaction?.categorie_personnalisee || '' %>"
-                    >
-
-
-                </div>
-
 
 
                 <!-- DATE -->
@@ -1115,7 +1632,6 @@
                 </div>
 
 
-
                 <!-- DESCRIPTION -->
 
                 <div class="bz-description-field">
@@ -1134,9 +1650,7 @@
                         value="<%= ancienneTransaction?.description || '' %>"
                     >
 
-
                 </div>
-
 
 
                 <button
@@ -1146,29 +1660,18 @@
                     + Enregistrer la transaction
                 </button>
 
-
-                <p class="bz-form-hint">
-                    Choisissez une catégorie existante
-                    ou créez votre propre catégorie.
-                </p>
-
-
             </form>
-
 
         </section>
 
-
     </main>
-
 
 </div>
 
 
-
-<!-- ==================================================
-     MODALE DE SUPPRESSION
-     ================================================== -->
+<!-- =====================================
+     MODALE SUPPRESSION
+     ===================================== -->
 
 <div
     id="deleteModal"
@@ -1176,14 +1679,12 @@
     aria-hidden="true"
 >
 
-
     <div
         class="bz-delete-modal"
         role="dialog"
         aria-modal="true"
         aria-labelledby="deleteModalTitle"
     >
-
 
         <div class="bz-delete-modal-icon">
             !
@@ -1208,7 +1709,6 @@
 
         <div class="bz-delete-modal-actions">
 
-
             <button
                 type="button"
                 id="cancelDelete"
@@ -1226,32 +1726,18 @@
                 Supprimer
             </button>
 
-
         </div>
-
 
     </div>
 
-
 </div>
 
-
-
-<!-- =====================================
-     JAVASCRIPT
-     ===================================== -->
 
 <script
     src="/confirm-delete.js"
     defer
 ></script>
 
-
-<script
-    src="/dashboard.js"
-    defer
-></script>
-
-
 </body>
+
 </html>
